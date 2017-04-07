@@ -144,9 +144,9 @@ ICDICFR4                0x00001C10     32      rw     0x00000000     Interrupt C
 ICDICFR5                0x00001C14     32      rw     0x00000000     Interrupt Configuration
                                                                      Register 5
 <-------->
-ppi_status              0x00001D00     32      ro      0x00000000    PPI Status Register
-spi_status_0            0x00001D04     32      ro      0x00000000    SPI Status Register 0
-spi_status_1            0x00001D08     32      ro      0x00000000    SPI Status Register 1
+PPI_STATUS              0x00001D00     32      ro      0x00000000    PPI Status Register
+SPI_STATUS_0            0x00001D04     32      ro      0x00000000    SPI Status Register 0
+SPI_STATUS_1            0x00001D08     32      ro      0x00000000    SPI Status Register 1
 ICDSGIR                 0x00001F00     32      rw     0x00000000     Software Generated Interrupt
                                                                      Register
 ICPIDR4                 0x00001FD0       32      rw      0x00000004      Peripheral ID4
