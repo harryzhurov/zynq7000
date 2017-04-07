@@ -64,23 +64,31 @@ def namegen(fullpath, ext):
     return name + os.path.extsep + ext
 #-------------------------------------------------------------------------------
 def parse(text):
-    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(0x[0-9a-fA-F]+)\s+([\w\s-]+)'
+    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
         
-    mname = lines[0].split()[0]
-    baddr = lines[1].split()[0]
+    mname       = lines[0].split()[0]
+    baddrs      = lines[1].split()
+    regsuffixes = lines[2].split()
+    
+    if not regsuffixes:
+        regsuffixes = ['']
                        
     records = []
     
-    fields = None
-    col1_pos = 0
+    fields       = None
+    col1_pos     = 0
     col_last_pos = 0
     
     for i, l in enumerate(lines, start = 1):
         res = re.match('<-+>', l)
         if res:
-            records.append([''])
+            if fields:
+                records.append(fields)
+                fields = None
+                
+            records.append(['', '', '', '', '', ''])
             continue
 
         res = re.match(main_pattern, l)
@@ -111,15 +119,10 @@ def parse(text):
                     records.append(fields)
                     fields = None
                         
-    return records, mname, baddr
+    return records, mname, baddrs, regsuffixes
     
 #-------------------------------------------------------------------------------
-def generate_output(records, name, style, mod_name, base_addr):
-    
-    max_name_len = 0
-    for r in records:
-        if len( r[0] ) > max_name_len:
-            max_name_len = len( r[0])
+def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
     
     sout  = title0
     sout += title1 + title2
@@ -128,12 +131,14 @@ def generate_output(records, name, style, mod_name, base_addr):
     sout += title3 + os.linesep
     sout += '#ifndef ' + mod_name + '_H'  + os.linesep
     sout += '#define ' + mod_name + '_H'  + os.linesep*2
+    sout += '#include <pmodmap.h>' + os.linesep*2
     sout += \
-'//------------------------------------------------------------------------------' + os.linesep + \
-'//'                                                                               + os.linesep + \
-'//     Registers'                                                                 + os.linesep + \
-'//'                                                                               + os.linesep
-
+    '//------------------------------------------------------------------------------' + os.linesep + \
+    '//'                                                                               + os.linesep + \
+    '//     Registers'                                                                 + os.linesep + \
+    '//'                                                                               + os.linesep + \
+    '//------------------------------------------------------------------------------' + os.linesep 
+    
     if style == 'macro':
         prefix = '#define '
         prefix2 = '  ('
@@ -146,34 +151,68 @@ def generate_output(records, name, style, mod_name, base_addr):
         prefix = '    '
         prefix2 = ' =  '
         suffix = ','
-        
-    s0 = len(prefix) - len('//')
-    s1 = max_name_len - len('Name') + len(' = ')
-    s2 = len(mod_name) + len(' + 0x00000000; // ')
-    s3 = len('  ') 
-    s4 = len('  ')
-    s5 = len('   ')
 
-    sout += '//' + s0*' ' + 'Name' + s1*' ' + 'Address' + s2*' ' + 'Width' + s3*' ' + 'Type' + s4*' ' + 'Reset Value' + s5*' ' + 'Description' + os.linesep
-     
-    if style == 'enum':
-        sout += 'enum T' + mod_name + os.linesep
-        sout += '{' + os.linesep
-                      
-    for idx, r in enumerate(records, start=1):
-        if style == 'enum' and idx == len(records):
-            suffix = ' '
+    for ba_idx, base_addr in enumerate(base_addrs):
+        
+        max_name_len = 0
+        max_type_len = 0
+        reg_suffix   = reg_suffixes[ba_idx]
+        
+        suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
+        
+        for r in records:
+            #print(r)
+            reg_name_len = len( r[0] + suffix_sep + reg_suffix)
+            if reg_name_len > max_name_len:
+                max_name_len = reg_name_len
+                
+            type_len = len(r[3])
+            if type_len > max_type_len:
+                max_type_len = type_len
+                
+        baddr = base_addr + '_ADDR'
+        sout += '//' + os.linesep + '//    ' + mod_name + suffix_sep + reg_suffix + ' MMRs' + os.linesep + '//' + os.linesep
+        
+        #-----------------------------------------------------------------------
+        s0 = len(prefix) - len('//')
+        s1 = max_name_len - len('Name') + len(' = ')
+        s2 = len( prefix2 + baddr + ' + 0x00000000' + suffix ) - len('Address')
+        s3 = 3 
+        s4 = 2 if max_type_len <= 2 else max_type_len
+        s5 = len('   ')
+        #-----------------------------------------------------------------------
+        sout += '//' + s0*' ' + 'Name' + s1*' ' + 'Address' + s2*' ' + 'Width' + s3*' ' +\
+                'Type' + s4*' ' + 'Reset Value' + s5*' ' + 'Description' + os.linesep
+         
+        if style == 'enum':
+            sout += 'enum T' + mod_name + suffix_sep + reg_suffix + os.linesep
+            sout += '{' + os.linesep
+                          
+        sfx = suffix
+        for idx, r in enumerate(records, start=1):
+            if style == 'enum' and idx == len(records):
+                sfx = ' '
+                
+            if r[0]:
+                if len(reg_suffixes[ba_idx]):
+                    reg_name = r[0] + suffix_sep + reg_suffix
+                else:
+                    reg_name = r[0]
+                    
+                if len(r[3]) < max_type_len:
+                    r[3] += (max_type_len - len(r[3]))*' '
+                    
+                if len(r[4]) < 10:
+                    r[4] += ( 10-len(r[4]) )*' '
+                #                   Name                                                 Address                                     Width         Type        Reset Value       Description
+                sout += prefix + reg_name + (max_name_len - len(reg_name))*' ' + prefix2 + baddr + ' + ' + r[1] + sfx + ' //  ' + r[2] + 4*' ' + r[3] + 4*' ' + r[4] + 4*' ' + r[5]  + os.linesep
+            else:
+                sout += os.linesep
             
-        if r[0]:
-            #               Name                                        Address                     Width           Type         Reset Value    Description
-            sout += prefix + r[0] + (max_name_len - len(r[0]))*' ' + prefix2 + base_addr + ' + ' + r[1] + suffix + ' //  ' + r[2] + 4*' ' + r[3] + 3*' ' + r[4] + 4*' ' + r[5]  + os.linesep
-        else:
-            sout += os.linesep
-        
-    if style == 'enum':
-        sout += '};' + os.linesep
-        
-    sout += '//------------------------------------------------------------------------------' + os.linesep
+        if style == 'enum':
+            sout += '};' + os.linesep
+            
+        sout += '//------------------------------------------------------------------------------' + os.linesep
         
     sout +=  os.linesep + '#endif // ' + mod_name + '_H'  + os.linesep
     return sout        
@@ -202,8 +241,8 @@ for i in optlist:
 infile = infiles[0]
 text   = read_file(infile)
 
-records, mod_name, base_addr = parse(text)
-out = generate_output(records, 'slon', style, mod_name, base_addr)
+records, mod_names, base_addrs, reg_suffixs = parse(text)
+out = generate_output(records, 'slon', style, mod_names, base_addrs, reg_suffixs)
 
 outfile = namegen(infile, 'h')
 
