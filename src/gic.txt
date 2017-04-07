@@ -1,5 +1,5 @@
 GIC
-MPCORE_ADDR
+MPCORE
 
 
     Register Name         Address      Width   Type    Reset Value            Description
