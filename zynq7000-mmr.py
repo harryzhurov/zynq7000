@@ -12,7 +12,7 @@ title0 =\
 '//*'                                                                                + os.linesep
 title1 = '//*      '
 
-title2 = ' Xilix zynq7000 peripheral memory mapped registers header file'            + os.linesep
+title2 = 'Xilinx zynq7000 peripheral memory mapped registers header file'            + os.linesep
 
 title3 = \
 '//*'                                                                                + os.linesep +\
@@ -123,6 +123,7 @@ def generate_output(records, name, style, mod_name, base_addr):
     
     sout  = title0
     sout += title1 + title2
+    sout += title1 + os.linesep
     sout += title1 + 'Module name: ' + mod_name + os.linesep
     sout += title3 + os.linesep
     sout += '#ifndef ' + mod_name + '_H'  + os.linesep
