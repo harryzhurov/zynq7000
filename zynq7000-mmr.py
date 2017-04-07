@@ -79,6 +79,8 @@ def parse(text):
     
     fields       = None
     col1_pos     = 0
+    col3_pos     = 0
+    col4_pos     = 0
     col_last_pos = 0
     
     for i, l in enumerate(lines, start = 1):
@@ -98,6 +100,8 @@ def parse(text):
             fields = list( res.groups() )
             fields[-1].strip()    
             col1_pos     = l.index(fields[1])
+            col3_pos     = l.index(fields[3])
+            col4_pos     = l.index(fields[4])
             col_last_pos = l.index(fields[-1])
         else:
             if not fields:
@@ -105,11 +109,15 @@ def parse(text):
             else:
                 if len( l.strip() ):
                     col0     = l[0:col1_pos].strip()
+                    col3     = l[col3_pos:col4_pos].strip()
                     col_last = l[col_last_pos:].strip()
 
                     if len(col0):
                         fields[0] += col0
 
+                    if len(col3):
+                        fields[3] += col3
+                        
                     if len(col_last):
                         fields[-1] += ' ' + col_last
 
@@ -198,6 +206,9 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
                     reg_name = r[0] + suffix_sep + reg_suffix
                 else:
                     reg_name = r[0]
+                    
+                if len(r[2]) < 2:
+                    r[2] = ' ' + r[2]
                     
                 if len(r[3]) < max_type_len:
                     r[3] += (max_type_len - len(r[3]))*' '

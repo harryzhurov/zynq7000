@@ -50,6 +50,7 @@
         <Folder
             Name="Source Files"
             Filters="*.txt">
+            <F N="src/axi_hp.txt"/>
             <F N="src/gic.txt"/>
             <F N="ug585-Zynq-7000-TRM.txt"/>
         </Folder>
