@@ -63,7 +63,7 @@ def namegen(fullpath, ext):
     name     = os.path.splitext(basename)[0]
     return name + os.path.extsep + ext
 #-------------------------------------------------------------------------------
-def parse(text):
+def parse_regs(text):
     main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
@@ -130,7 +130,7 @@ def parse(text):
     return records, mname, baddrs, regsuffixes
     
 #-------------------------------------------------------------------------------
-def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
+def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
     
     sout  = title0
     sout += title1 + title2
@@ -252,8 +252,8 @@ for i in optlist:
 infile = infiles[0]
 text   = read_file(infile)
 
-records, mod_names, base_addrs, reg_suffixs = parse(text)
-out = generate_output(records, 'slon', style, mod_names, base_addrs, reg_suffixs)
+records, mod_names, base_addrs, reg_suffixs = parse_regs(text)
+out = generate_output(records, style, mod_names, base_addrs, reg_suffixs)
 
 outfile = namegen(infile, 'h')
 
