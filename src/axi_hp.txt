@@ -1,0 +1,19 @@
+AXI_HP
+AXI_HP0  AXI_HP1  AXI_HP2  AXI_HP3
+    0        1        2        3
+
+AFI_RDCHAN_CTRL         0x00000000      32       mixed    0x00000000    Read Channel Control Register
+AFI_RDCHAN_ISSUI        0x00000004      32       mixed    0x00000007    Read Issuing Capability
+NGCAP                                                                   Register
+AFI_RDQOS               0x00000008      32       mixed    0x00000000    QOS Read Channel Register
+AFI_RDDATAFIFO_LE 0x0000000C            32       mixed    0x00000000    Read Data FIFO Level Register
+VEL
+AFI_RDDEBUG             0x00000010      32       mixed    0x00000000    Read Channel Debug Register
+AFI_WRCHAN_CTRL         0x00000014      32       mixed    0x00000F00    Write Channel Control Register
+AFI_WRCHAN_ISSUI        0x00000018      32       mixed    0x00000007    Write Issuing Capability
+NGCAP                                                                   Register
+AFI_WRQOS               0x0000001C      32       mixed    0x00000000    QOS Write Channel Register
+AFI_WRDATAFIFO_L        0x00000020      32       mixed    0x00000000    Write Data FIFO Level Register
+EVEL
+AFI_WRDEBUG             0x00000024      32       mixed    0x00000000    Write Channel Debug Register
+
