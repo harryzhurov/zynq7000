@@ -1,0 +1,20 @@
+GPV_QOS301
+GPV_QOS301_CPU GPV_QOS301_DMAC GPV_QOS301_IOU
+   CPU                DMAC          IOU
+
+
+qos_cntl                0x0000010C      32      rw         0x00000000    The QoS control register
+                                                                         contains the enable bits for all
+                                                                         the regulators.
+max_ot                  0x00000110      32      rw         0x00000000    Maximum number of
+                                                                         outstanding transactions
+max_comb_ot             0x00000114      32      rw         0x00000000    Maximum number of combined
+                                                                         outstanding transactions
+aw_p                    0x00000118      32      rw         0x00000000    AW channel peak rate
+aw_b                    0x0000011C      32      rw         0x00000000    AW channel burstiness
+                                                                         allowance
+aw_r                    0x00000120      32      rw         0x00000000    AW channel average rate
+ar_p                    0x00000124      32      rw         0x00000000    AR channel peak rate
+ar_b                    0x00000128      32      rw         0x00000000    AR channel burstiness
+                                                                         allowance
+ar_r                    0x0000012C      32      rw         0x00000000    AR channel average rate
