@@ -207,6 +207,8 @@ def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
                 else:
                     reg_name = r[0]
                     
+                reg_name = reg_name.upper()
+                    
                 if len(r[2]) < 2:
                     r[2] = ' ' + r[2]
                     
