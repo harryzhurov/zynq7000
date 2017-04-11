@@ -47,18 +47,92 @@ title3 = \
 '//------------------------------------------------------------------------------'   + os.linesep
 
 #-------------------------------------------------------------------------------
-
-def parse_regs(text):
+def split_modules(text):
+    
+    pattern = '+=+>B\.\d+\s([\s\w[:punct:]]+?)<=+'
+    
+    return re.findall(pattern, text)
+    
+#-------------------------------------------------------------------------------
+def parse_module(text):
+ 
+    #---------------------------------------------------------------
+    #
+    #    Search patterns
+    #   
+    h1  = 'B\.\d+ +.+\((\w+)\) *\n'            # header 1
+    baf = 'Base Address((?: +0x\w+ +\w+\n)+)'  # base address frame
+    ba  = ' +0x\w+ +(\w+)\n'
+    sfx = '\nSuffixes +(.+)'
+    rsf = 'Register Summary((?:\n|.)+?)<'      # registers summary frame
+    rdf = '<-+( +-+>(.|\n)+<-+) +'             # registers description frame
+    
+    #---------------------------------------------------------------
+    #
+    #    Parse module
+    #
+    #    Module name
+    res = re.search(h1, text)
+    if res:
+        mname = res.group(1) 
+    else:
+        print('E: invalid module format, header not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+        
+    #    Base address[es]
+    res = re.search(baf, text)
+    if res:
+        baframe = res.group(1) 
+    else:
+        print('E: invalid module format, Base Address frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+    
+    baddr = re.findall(ba, baframe)
+    if not baddr:
+        print('E: invalid Base Address frame format')
+        print(baframe)
+        sys.exit(1)
+        
+    #    Suffixes
+    res = re.search(sfx, text)
+    if res:
+        suffixes = res.group(1).split()
+    else:
+        suffixes = None
+    
+    #    Register summary
+    res = re.search(rsf, text)
+    if res:
+        regsum = res.group(1) 
+    else:
+        print('E: invalid module format, Register Summary frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+            
+    #    Register description
+    res = re.search(rdf, text)
+    if res:
+        regdescr = res.group(1) 
+    else:
+        print('E: invalid module format, Register Description frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+        
+    #print(mname)
+    #print(baddr)
+    #print(suffixes)
+    #print(regsum)
+    #print(regdescr)
+    
+    return mname, baddr, suffixes, regsum, regdescr
+    
+#-------------------------------------------------------------------------------
+def parse_regsum(text):
     main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
-        
-    mname       = lines[0].split()[0]
-    baddrs      = lines[1].split()
-    regsuffixes = lines[2].split()
-    
-    if not regsuffixes:
-        regsuffixes = ['']
                        
     records = []
     
@@ -112,7 +186,11 @@ def parse_regs(text):
                     records.append(fields)
                     fields = None
                         
-    return records, mname, baddrs, regsuffixes
+    return records
+    
+#-------------------------------------------------------------------------------
+def parse_regdescr(text):
+    pass
     
 #-------------------------------------------------------------------------------
 def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
