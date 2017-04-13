@@ -14,7 +14,7 @@ title0 =\
 '//*'                                                                                + os.linesep
 title1 = '//*      '
 
-title2 = 'Xilinx zynq7000 peripheral memory mapped registers header file'            + os.linesep
+title2 = 'Xilinx zynq7000 PS7 memory mapped registers header file'                   + os.linesep
 
 title3 = \
 '//*'                                                                                + os.linesep +\
@@ -48,10 +48,11 @@ title3 = \
 
 #-------------------------------------------------------------------------------
 def split_modules(text):
+    return text.split('<====    ====>')
     
-    pattern = '+=+>B\.\d+\s([\s\w[:punct:]]+?)<=+'
-    
-    return re.findall(pattern, text)
+#-------------------------------------------------------------------------------
+def split_regs(text):
+    return  re.findall('-+>((?:.|\s)+?)<-+', text)
     
 #-------------------------------------------------------------------------------
 def parse_module(text):
@@ -62,8 +63,8 @@ def parse_module(text):
     #   
     h1  = 'B\.\d+ +.+\((\w+)\) *\n'            # header 1
     baf = 'Base Address((?: +0x\w+ +\w+\n)+)'  # base address frame
-    ba  = ' +0x\w+ +(\w+)\n'
-    sfx = '\nSuffixes +(.+)'
+    ba  = ' +0x\w+ +(\w+)\n'                   # base address
+    sfx = '\nSuffixes +(.+)'                   # suffixes
     rsf = 'Register Summary((?:\n|.)+?)<'      # registers summary frame
     rdf = '<-+( +-+>(.|\n)+<-+) +'             # registers description frame
     
@@ -189,9 +190,72 @@ def parse_regsum(text):
     return records
     
 #-------------------------------------------------------------------------------
+def parse_regdescr_table(text):
+
+    main_pattern = '(\w+) +(\d+(?::\d+)*) +(\w+) +(\w+) +(.+)'
+
+    lines = text.splitlines()
+
+    table = []
+    row   = []
+
+    col_pos = []
+
+    for i, l in enumerate(lines, start = 1):
+        res = re.match(main_pattern, l)
+        if res:
+            if row:
+                table.append(row)
+                row = []
+
+            items = res.groups()
+            for i in items:
+                row.append([i])
+            for i in row:
+                col_pos.append( l.index(i[0]) )
+
+        else:
+            if not row:
+                continue
+
+            col1 = l[:col_pos[1]].strip()
+            col5 = l[col_pos[4]:].strip()
+            if col1:
+                row[0].append(col1)
+            if col5:
+                row[4].append(col5)
+
+    if row:
+        table.append(row)
+
+    return table
+
+#-------------------------------------------------------------------------------
 def parse_regdescr(text):
-    pass
+
+    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register +\w+ +Details.+)(?P<Bits>Field Name +Bits.+)'
+
+    res = re.search(main_pattern, text, re.DOTALL)
+
+    header  = res.groupdict()['Header'].strip()
+    info    = res.groupdict()['Info'].strip()
+    details = res.groupdict()['Details'].strip()
+    bittext = res.groupdict()['Bits'].strip()
     
+    bittable = parse_regdescr_table(bittext)
+    
+    bitdata = []
+    for item in bittable:
+        bname   = ''.join(item[0])
+        bname   = re.sub('\(.+\)', '', bname).upper()
+        bnum    = item[1][0]
+        btype   = item[2][0]
+        bresval = item[3][0]
+        bdescr  = item[4]
+        bitdata.append([bname, bnum, btype, bresval, bdescr])
+    
+    return header, info, details, bitdata, bittable
+
 #-------------------------------------------------------------------------------
 def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
     
