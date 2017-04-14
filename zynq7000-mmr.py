@@ -247,7 +247,7 @@ def parse_regdescr(text):
     info    = re.sub('\n\n+', '\n', info)
     details = re.sub('\n\n+', '\n', details)
         
-    bittables = re.split('table_header', bittext)
+    bittables = re.split(table_header, bittext)
     bittable = []
     for bt in bittables:
         bittable += parse_regdescr_table(bt)
@@ -262,7 +262,7 @@ def parse_regdescr(text):
         bdescr  = item[4]
         bitdata.append([bname, bnum, btype, bresval, bdescr])
     
-    return header, info, details, bitdata
+    return header, info, details, bitdata, bittables
 
 #-------------------------------------------------------------------------------
 def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetails):
@@ -270,7 +270,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
     sout  = title0
     sout += title1 + title2
     sout += title1 + os.linesep
-    sout += title1 + 'Module name: ' + mod_name + os.linesep
+    sout += title1 + 'Module name: PS7_' + mod_name.upper() + os.linesep
     sout += title3 + os.linesep
     sout += '#ifndef ' + mod_name + '_H'  + os.linesep
     sout += '#define ' + mod_name + '_H'  + os.linesep*2
@@ -375,8 +375,46 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += info    + os.linesep
         sout += '//' + os.linesep
         sout += details + os.linesep
+        bitrecs = []
+        for row in reg[3]:                   # table row
+            name  = row[0].upper()
+            bits  = row[1]
+            btype = row[2]
+            rval  = row[3]
+            descr = row[4]
+            
+            res = re.match('(\d+):*(\d+)*', bits)
+            if not res:
+                print('E: invalid bits number[s]: ' + bits)
+            
+            bitlist = res.groups()
+            if bitlist[1] == None:
+                bpos  = bitlist[0]
+                bmask = '0x{:>08X}'.format(1 << int(bpos))
+            else:
+                bpos   = bitlist[1]
+                brange = int(bitlist[0])-int(bpos) + 1
+                bmask  = '0x{:>08X}'.format( (int('1'*brange, 2) ) << int(bpos))
+            
+            bitrecs.append([ name, bmask, bpos, bits, btype, rval, descr])
+            
+        maxnamelen = 0
+        for bitrec in bitrecs:
+            namelen = len(bitrec[0])
+            if namelen > maxnamelen:
+                maxnamelen = namelen
+                
+        comment_offset = maxnamelen + len('_MASK' + '0x00000000' + prefix + prefix2 + suffix) + 4
         
-    sout +=  os.linesep + '#endif // ' + mod_name + '_H'  + os.linesep
+        for br in bitrecs:
+            sout += prefix + br[0] + '_MASK' + prefix2 + br[1] + suffix +  ' '*4 + '// bits: ' + br[3] + ' | type: ' + br[4] + ' | reset value: ' + br[5] + os.linesep
+            sout += prefix + br[0] + '_BPOS' + prefix2 + br[2] + suffix +  ' '*(4+len(br[1])-len(br[2])) + '// ' + br[6][0] + os.linesep
+            for d in br[6][1:]:
+                sout += ' '*comment_offset + '// ' + d + os.linesep
+        
+            sout += os.linesep
+            
+    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep
     return sout        
 
 #-------------------------------------------------------------------------------
@@ -411,7 +449,6 @@ for m in mods_raw:
     regdata = parse_regsum(regsum)
     regbits_raw = split_regs(regdescr)
     regdetails  = [parse_regdescr(x) for x in regbits_raw]
-    #print(regdetails)
     out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
     print(out)
     
@@ -426,4 +463,3 @@ for m in mods_raw:
 #print(opath + os.sep + outfile)
 
 #-------------------------------------------------------------------------------
-
