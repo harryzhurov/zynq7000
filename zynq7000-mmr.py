@@ -233,7 +233,8 @@ def parse_regdescr_table(text):
 #-------------------------------------------------------------------------------
 def parse_regdescr(text):
 
-    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register +\w+ +Details.+)(?P<Bits>Field Name +Bits.+)'
+    table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
+    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register +\w+ +Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
 
@@ -242,7 +243,14 @@ def parse_regdescr(text):
     details = res.groupdict()['Details'].strip()
     bittext = res.groupdict()['Bits'].strip()
     
-    bittable = parse_regdescr_table(bittext)
+    
+    info    = re.sub('\n\n+', '\n', info)
+    details = re.sub('\n\n+', '\n', details)
+        
+    bittables = re.split('table_header', bittext)
+    bittable = []
+    for bt in bittables:
+        bittable += parse_regdescr_table(bt)
     
     bitdata = []
     for item in bittable:
@@ -254,10 +262,10 @@ def parse_regdescr(text):
         bdescr  = item[4]
         bitdata.append([bname, bnum, btype, bresval, bdescr])
     
-    return header, info, details, bitdata, bittable
+    return header, info, details, bitdata
 
 #-------------------------------------------------------------------------------
-def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
+def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetails):
     
     sout  = title0
     sout += title1 + title2
@@ -295,7 +303,7 @@ def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
         
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
         
-        for r in records:
+        for r in regdata:
             #print(r)
             reg_name_len = len( r[0] + suffix_sep + reg_suffix)
             if reg_name_len > max_name_len:
@@ -324,8 +332,8 @@ def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
             sout += '{' + os.linesep
                           
         sfx = suffix
-        for idx, r in enumerate(records, start=1):
-            if style == 'enum' and idx == len(records):
+        for idx, r in enumerate(regdata, start=1):
+            if style == 'enum' and idx == len(regdata):
                 sfx = ' '
                 
             if r[0]:
@@ -354,6 +362,20 @@ def generate_output(records, style, mod_name, base_addrs, reg_suffixes):
             
         sout += '//------------------------------------------------------------------------------' + os.linesep
         
+        
+    for reg in regdetails:
+        sout += os.linesep +'//------------------------------------------------------------------------------' + os.linesep
+        sout += '//' + os.linesep
+        sout += '// ' + reg[0] + os.linesep  # header
+        sout += '//' + os.linesep
+
+        info    = re.sub('^', '// ', reg[1], flags=re.MULTILINE)  
+        details = re.sub('^', '// ', reg[2], flags=re.MULTILINE)  
+        
+        sout += info    + os.linesep
+        sout += '//' + os.linesep
+        sout += details + os.linesep
+        
     sout +=  os.linesep + '#endif // ' + mod_name + '_H'  + os.linesep
     return sout        
 
@@ -381,12 +403,25 @@ for i in optlist:
 infile = infiles[0]
 text   = read_file(infile)
 
-records, mod_names, base_addrs, reg_suffixs = parse_regs(text)
-out = generate_output(records, style, mod_names, base_addrs, reg_suffixs)
+mods_raw = split_modules(text)
+mods = []
+for m in mods_raw:
+    #mods.append( parse_module(m) )   # result: mname, baddr, suffixes, regsum, regdescr
+    mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
+    regdata = parse_regsum(regsum)
+    regbits_raw = split_regs(regdescr)
+    regdetails  = [parse_regdescr(x) for x in regbits_raw]
+    #print(regdetails)
+    out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
+    print(out)
+    
 
-outfile = namegen(infile, 'h')
+#records, mod_names, base_addrs, reg_suffixs = parse_regsum(text)
+#out = generate_output(regdata, style, mname, baddr, rsuffixes)
 
-write_file(opath + os.sep + outfile, out)
+#outfile = namegen(infile, 'h')
+
+#write_file(opath + os.sep + outfile, out)
 
 #print(opath + os.sep + outfile)
 
