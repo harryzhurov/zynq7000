@@ -120,12 +120,6 @@ def parse_module(text):
         print('E: invalid module format, Register Description frame not found')
         print('module contents: ') + text[:1000]
         sys.exit(1)
-        
-    #print(mname)
-    #print(baddr)
-    #print(suffixes)
-    #print(regsum)
-    #print(regdescr)
     
     return mname, baddr, suffixes, regsum, regdescr
     
@@ -332,7 +326,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             sout += '{' + os.linesep
                           
         sfx = suffix
-        for idx, r in enumerate(regdata, start=1):
+        for idx, r in enumerate(regdata, start = 1):
             if style == 'enum' and idx == len(regdata):
                 sfx = ' '
                 
@@ -363,16 +357,17 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += '//------------------------------------------------------------------------------' + os.linesep
         
         
-    for reg in regdetails:
+    for reg in regdetails:   # reg: list[ header, info, details, bitdata, bittables ]
         sout += os.linesep +'//------------------------------------------------------------------------------' + os.linesep
         sout += '//' + os.linesep
         sout += '// ' + reg[0] + os.linesep  # header
         sout += '//' + os.linesep
 
+        regname = re.match('Name +(\w+) *\n', reg[1]).groups()[0]
         info    = re.sub('^', '// ', reg[1], flags=re.MULTILINE)  
         details = re.sub('^', '// ', reg[2], flags=re.MULTILINE)  
         
-        sout += info    + os.linesep
+        sout += info + os.linesep
         sout += '//' + os.linesep
         sout += details + os.linesep
         sout += '//' + os.linesep
@@ -408,17 +403,27 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                 
         comment_offset = maxnamelen + len('_MASK' + '0x00000000' + prefix + prefix2 + suffix) + 4
         
-        for br in bitrecs:
+        sfx = suffix
+        if style == 'enum':
+            sout += 'enum T' + regname.upper() + os.linesep
+            sout += '{' + os.linesep
+            
+        for idx, br in enumerate(bitrecs, start = 1):
             if br[0] == 'RESERVED':
                 sout += '// ' + br[0] + ' '*(comment_offset - len(br[0])) + 'Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
             else:
                 sout += ' '*comment_offset + '// Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
-                sout += prefix + br[0] + '_MASK' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[1] + suffix +  ' '*4 +                         '// ' + (br[6][0] if len(br[6]) > 0 else '') + os.linesep
-                sout += prefix + br[0] + '_BPOS' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[2] + suffix +  ' '*(4+len(br[1])-len(br[2])) + '// ' + (br[6][1] if len(br[6]) > 1 else '') + os.linesep
+                sout += prefix + br[0] + '_MASK' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[1] + sfx +  ' '*4 +                         '// ' + (br[6][0] if len(br[6]) > 0 else '') + os.linesep
+                if style == 'enum' and idx == len(bitrecs):
+                    sfx = ' '
+                sout += prefix + br[0] + '_BPOS' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[2] + sfx +  ' '*(4+len(br[1])-len(br[2])) + '// ' + (br[6][1] if len(br[6]) > 1 else '') + os.linesep
                 for d in br[6][2:]:
                     sout += ' '*comment_offset + '// ' + d + os.linesep
         
             sout += os.linesep
+            
+        if style == 'enum':
+            sout += '};' + os.linesep
             
     sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep
     return sout        
@@ -454,7 +459,7 @@ for m in mods_raw:
     mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
     regdata = parse_regsum(regsum)
     regbits_raw = split_regs(regdescr)
-    regdetails  = [parse_regdescr(x) for x in regbits_raw]
+    regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
     out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
     outfile = 'ps7' + mname.lower() + '.h'
     if not os.path.exists(opath):
