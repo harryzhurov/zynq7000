@@ -375,6 +375,8 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += info    + os.linesep
         sout += '//' + os.linesep
         sout += details + os.linesep
+        sout += '//' + os.linesep
+        
         bitrecs = []
         for row in reg[3]:                   # table row
             name  = row[0].upper()
@@ -399,18 +401,22 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             bitrecs.append([ name, bmask, bpos, bits, btype, rval, descr])
             
         maxnamelen = 0
-        for bitrec in bitrecs:
-            namelen = len(bitrec[0])
+        for br in bitrecs:
+            namelen = len(br[0])
             if namelen > maxnamelen:
                 maxnamelen = namelen
                 
         comment_offset = maxnamelen + len('_MASK' + '0x00000000' + prefix + prefix2 + suffix) + 4
         
         for br in bitrecs:
-            sout += prefix + br[0] + '_MASK' + prefix2 + br[1] + suffix +  ' '*4 + '// bits: ' + br[3] + ' | type: ' + br[4] + ' | reset value: ' + br[5] + os.linesep
-            sout += prefix + br[0] + '_BPOS' + prefix2 + br[2] + suffix +  ' '*(4+len(br[1])-len(br[2])) + '// ' + br[6][0] + os.linesep
-            for d in br[6][1:]:
-                sout += ' '*comment_offset + '// ' + d + os.linesep
+            if br[0] == 'RESERVED':
+                sout += '// ' + br[0] + ' '*(comment_offset - len(br[0])) + 'Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
+            else:
+                sout += ' '*comment_offset + '// Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
+                sout += prefix + br[0] + '_MASK' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[1] + suffix +  ' '*4 +                         '// ' + (br[6][0] if len(br[6]) > 0 else '') + os.linesep
+                sout += prefix + br[0] + '_BPOS' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[2] + suffix +  ' '*(4+len(br[1])-len(br[2])) + '// ' + (br[6][1] if len(br[6]) > 1 else '') + os.linesep
+                for d in br[6][2:]:
+                    sout += ' '*comment_offset + '// ' + d + os.linesep
         
             sout += os.linesep
             
