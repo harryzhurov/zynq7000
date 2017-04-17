@@ -279,7 +279,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
     if style == 'macro':
         prefix = '#define '
         prefix2 = '  ('
-        suffix = ')'
+        suffix = 'UL)'
     elif style == 'intptr':
         prefix = 'const uintptr_t '
         prefix2 = ' = '
@@ -307,7 +307,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             if type_len > max_type_len:
                 max_type_len = type_len
                 
-        baddr = base_addr + '_ADDR'
+        baddr = base_addr.upper() + '_ADDR'
         sout += '//' + os.linesep + '//    ' + mod_name + suffix_sep + reg_suffix + ' MMRs' + os.linesep + '//' + os.linesep
         
         #-----------------------------------------------------------------------
@@ -357,6 +357,10 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += '//------------------------------------------------------------------------------' + os.linesep
         
         
+    if style == 'macro':
+        prefix2 = '  '
+        suffix = ''
+        
     for reg in regdetails:   # reg: list[ header, info, details, bitdata, bittables ]
         sout += os.linesep +'//------------------------------------------------------------------------------' + os.linesep
         sout += '//' + os.linesep
@@ -393,16 +397,20 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                 brange = int(bitlist[0])-int(bpos) + 1
                 bmask  = '0x{:>08X}'.format( (int('1'*brange, 2) ) << int(bpos))
             
+            if not style == 'intptr':
+                bmask += 'UL'
+                bpos  += 'UL'
+                
             bitrecs.append([ name, bmask, bpos, bits, btype, rval, descr])
-            
+        
         maxnamelen = 0
         for br in bitrecs:
             namelen = len(br[0])
             if namelen > maxnamelen:
                 maxnamelen = namelen
-                
-        comment_offset = maxnamelen + len('_MASK' + '0x00000000' + prefix + prefix2 + suffix) + 4
-        
+
+        comment_offset = maxnamelen + len('_MASK' + '0x00000000UL' + prefix + prefix2 + suffix) + 4
+                    
         sfx = suffix
         if style == 'enum':
             sout += 'enum T' + regname.upper() + os.linesep
