@@ -190,9 +190,8 @@ def parse_regdescr_table(text):
 
     lines = text.splitlines()
 
-    table = []
-    row   = []
-
+    table   = []
+    row     = []
     col_pos = []
 
     for i, l in enumerate(lines, start = 1):
@@ -299,7 +298,6 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
         
         for r in regdata:
-            #print(r)
             reg_name_len = len( r[0] + suffix_sep + reg_suffix)
             if reg_name_len > max_name_len:
                 max_name_len = reg_name_len
@@ -449,7 +447,6 @@ if not infiles:
     print('        -o - output path, if ommited then the current path is used')
     sys.exit(0)
 
-
 style  = 'intptr'
 opath  = os.getcwd()
 
@@ -467,7 +464,6 @@ mods = []
 print('*'*80)
 print('generating header files for style "' + style + '"')
 for m in mods_raw:
-    #mods.append( parse_module(m) )   # result: mname, baddr, suffixes, regsum, regdescr
     mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
     print('processing module ', mname + '... ', end='')
     regdata = parse_regsum(regsum)
@@ -479,18 +475,8 @@ for m in mods_raw:
         os.makedirs(opath)
     write_file(opath + os.sep + outfile, out)
     print(' '*(16-len(mname)), 'done')
-    #print(out)
     
 print('*'*80)
 print('')    
-
-#records, mod_names, base_addrs, reg_suffixs = parse_regsum(text)
-#out = generate_output(regdata, style, mname, baddr, rsuffixes)
-
-#outfile = namegen(infile, 'h')
-
-#write_file(opath + os.sep + outfile, out)
-
-#print(opath + os.sep + outfile)
 
 #-------------------------------------------------------------------------------
