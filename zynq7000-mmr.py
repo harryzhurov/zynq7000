@@ -272,8 +272,8 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
     sout += title1 + os.linesep
     sout += title1 + 'Module name: PS7_' + mod_name.upper() + os.linesep
     sout += title3 + os.linesep
-    sout += '#ifndef ' + mod_name + '_H'  + os.linesep
-    sout += '#define ' + mod_name + '_H'  + os.linesep*2
+    sout += '#ifndef PS7_' + mod_name.upper() + '_H'  + os.linesep
+    sout += '#define PS7_' + mod_name.upper() + '_H'  + os.linesep*2
     sout += '#include <pmodmap.h>' + os.linesep*2
     sout += \
     '//------------------------------------------------------------------------------' + os.linesep + \
@@ -456,7 +456,11 @@ for m in mods_raw:
     regbits_raw = split_regs(regdescr)
     regdetails  = [parse_regdescr(x) for x in regbits_raw]
     out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
-    print(out)
+    outfile = 'ps7' + mname.lower() + '.h'
+    if not os.path.exists(opath):
+        os.mkdir(opath)
+    write_file(opath + os.sep + outfile, out)
+    #print(out)
     
 
 #records, mod_names, base_addrs, reg_suffixs = parse_regsum(text)
