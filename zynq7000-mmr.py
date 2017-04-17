@@ -249,7 +249,8 @@ def parse_regdescr(text):
     bitdata = []
     for item in bittable:
         bname   = ''.join(item[0])
-        bname   = re.sub('\(.+\)', '', bname).upper()
+        bname   = re.sub('\(.+\)', '', bname)
+        bname     = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname).upper()
         bnum    = item[1][0]
         btype   = item[2][0]
         bresval = item[3][0]
@@ -377,6 +378,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += '//' + os.linesep
         
         bitrecs = []
+        valuelen  = len('0x00000000') if style == 'intptr' else len('0x00000000UL')
         for row in reg[3]:                   # table row
             name  = row[0].upper()
             bits  = row[1]
@@ -409,7 +411,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             if namelen > maxnamelen:
                 maxnamelen = namelen
 
-        comment_offset = maxnamelen + len('_MASK' + '0x00000000UL' + prefix + prefix2 + suffix) + 4
+        comment_offset = maxnamelen + valuelen + len('_MASK' + prefix + prefix2 + suffix) + 4
                     
         sfx = suffix
         if style == 'enum':
@@ -462,19 +464,25 @@ text   = read_file(infile)
 
 mods_raw = split_modules(text)
 mods = []
+print('*'*80)
+print('generating header files for style "' + style + '"')
 for m in mods_raw:
     #mods.append( parse_module(m) )   # result: mname, baddr, suffixes, regsum, regdescr
     mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
+    print('processing module ', mname + '... ', end='')
     regdata = parse_regsum(regsum)
     regbits_raw = split_regs(regdescr)
     regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
     out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
     outfile = 'ps7' + mname.lower() + '.h'
     if not os.path.exists(opath):
-        os.mkdir(opath)
+        os.makedirs(opath)
     write_file(opath + os.sep + outfile, out)
+    print(' '*(16-len(mname)), 'done')
     #print(out)
     
+print('*'*80)
+print('')    
 
 #records, mod_names, base_addrs, reg_suffixs = parse_regsum(text)
 #out = generate_output(regdata, style, mname, baddr, rsuffixes)
