@@ -199,7 +199,8 @@ def parse_regdescr_table(text):
         if res:
             if row:
                 table.append(row)
-                row = []
+                row     = []
+                col_pos = []
 
             items = res.groups()
             for i in items:
@@ -227,7 +228,7 @@ def parse_regdescr_table(text):
 def parse_regdescr(text):
 
     table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
-    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register +\w+ +Details.+?)'+ table_header + '(?P<Bits>.+)'
+    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
 
@@ -268,7 +269,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
     sout += title3 + os.linesep
     sout += '#ifndef PS7_' + mod_name.upper() + '_H'  + os.linesep
     sout += '#define PS7_' + mod_name.upper() + '_H'  + os.linesep*2
-    sout += '#include <pmodmap.h>' + os.linesep*2
+    sout += '#include <ps7modmap.h>' + os.linesep*2
     sout += \
     '//------------------------------------------------------------------------------' + os.linesep + \
     '//'                                                                               + os.linesep + \
@@ -293,7 +294,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         
         max_name_len = 0
         max_type_len = 0
-        reg_suffix   = reg_suffixes[ba_idx]
+        reg_suffix   = reg_suffixes[ba_idx] if reg_suffixes else ''
         
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
         
@@ -330,8 +331,11 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                 sfx = ' '
                 
             if r[0]:
-                if len(reg_suffixes[ba_idx]):
-                    reg_name = r[0] + suffix_sep + reg_suffix
+                if reg_suffixes:
+                    if len(reg_suffixes[ba_idx]):
+                        reg_name = r[0] + suffix_sep + reg_suffix
+                    else:
+                        reg_name = r[0]
                 else:
                     reg_name = r[0]
                     
