@@ -14,7 +14,7 @@ title0 =\
 '//*'                                                                                + os.linesep
 title1 = '//*      '
 
-title2 = 'Xilinx zynq7000 PS7 memory mapped registers header file'                   + os.linesep
+title2 = 'Xilinx zynq7000 PS7 Memory Mapped Registers Header File'                   + os.linesep
 
 title3 = \
 '//*'                                                                                + os.linesep +\
@@ -441,6 +441,28 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
     return sout        
 
 #-------------------------------------------------------------------------------
+def generate_common_header(mods):
+
+    sout  = title0
+    sout += title1 + title2
+    sout += title1 + os.linesep
+    sout += title1 + 'Common PS7 MMRs file' + os.linesep
+    sout += title3 + os.linesep
+    sout += '#ifndef PS7_MMRS_H' + os.linesep
+    sout += '#define PS7_MMRS_H' + os.linesep*2
+    sout += \
+    '//------------------------------------------------------------------------------' + os.linesep
+
+    for m in mods:
+        sout += '#include <' + m + '>' + os.linesep
+    
+    sout += \
+    '//------------------------------------------------------------------------------' + os.linesep 
+    
+    sout +=  os.linesep + '#endif // PS7_MMRS_H' + os.linesep
+    return sout        
+    
+#-------------------------------------------------------------------------------
 
 optlist, infiles = getopt.gnu_getopt(sys.argv[1:], 's:o:')
 
@@ -475,10 +497,13 @@ for m in mods_raw:
     regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
     out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
     outfile = 'ps7' + mname.lower() + '.h'
+    mods.append(outfile)
     if not os.path.exists(opath):
         os.makedirs(opath)
     write_file(opath + os.sep + outfile, out)
     print(' '*(16-len(mname)), 'done')
+    
+write_file(opath + os.sep + 'ps7mmrs.h', generate_common_header(mods)) 
     
 print('*'*80)
 print('')    
