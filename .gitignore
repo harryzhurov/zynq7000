@@ -5,3 +5,4 @@ ug585-Zynq-7000-TRM.txt
 *.vtg
 *.vpwhistu
 *.h
+__pycache__

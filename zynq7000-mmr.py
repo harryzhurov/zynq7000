@@ -6,13 +6,15 @@ import os
 import re
 import getopt
 
+from utils import *
+
 #-------------------------------------------------------------------------------
 title0 =\
 '//******************************************************************************'   + os.linesep +\
 '//*'                                                                                + os.linesep
 title1 = '//*      '
 
-title2 = 'Xilinx zynq7000 peripheral memory mapped registers header file'            + os.linesep
+title2 = 'Xilinx zynq7000 PS7 Memory Mapped Registers Header File'                   + os.linesep
 
 title3 = \
 '//*'                                                                                + os.linesep +\
@@ -44,36 +46,88 @@ title3 = \
 '//*'                                                                                + os.linesep +\
 '//------------------------------------------------------------------------------'   + os.linesep
 
-
 #-------------------------------------------------------------------------------
-def read_file(fname):
-    with open(fname, 'rb') as f:
-        b = f.read()
-    
-    return b.decode()
+def split_modules(text):
+    return text.split('<====    ====>')
     
 #-------------------------------------------------------------------------------
-def write_file(fname, data):
-    with open(fname, 'wb') as f:
-        f.write(data.encode('utf-8'))
+def split_regs(text):
+    return  re.findall('-+>((?:.|\s)+?)<-+', text)
+    
+#-------------------------------------------------------------------------------
+def parse_module(text):
+ 
+    #---------------------------------------------------------------
+    #
+    #    Search patterns
+    #   
+    h1  = 'B\.\d+ +.+\((\w+)\) *\n'            # header 1
+    baf = 'Base Address((?: +0x\w+ +\w+\n)+)'  # base address frame
+    ba  = ' +0x\w+ +(\w+)\n'                   # base address
+    sfx = '\nSuffixes +(.+)'                   # suffixes
+    rsf = 'Register Summary((?:\n|.)+?)<'      # registers summary frame
+    rdf = '<-+( +-+>(.|\n)+<-+) +'             # registers description frame
+    
+    #---------------------------------------------------------------
+    #
+    #    Parse module
+    #
+    #    Module name
+    res = re.search(h1, text)
+    if res:
+        mname = res.group(1) 
+    else:
+        print('E: invalid module format, header not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
         
+    #    Base address[es]
+    res = re.search(baf, text)
+    if res:
+        baframe = res.group(1) 
+    else:
+        print('E: invalid module format, Base Address frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+    
+    baddr = re.findall(ba, baframe)
+    if not baddr:
+        print('E: invalid Base Address frame format')
+        print(baframe)
+        sys.exit(1)
+        
+    #    Suffixes
+    res = re.search(sfx, text)
+    if res:
+        suffixes = res.group(1).split()
+    else:
+        suffixes = None
+    
+    #    Register summary
+    res = re.search(rsf, text)
+    if res:
+        regsum = res.group(1) 
+    else:
+        print('E: invalid module format, Register Summary frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+            
+    #    Register description
+    res = re.search(rdf, text)
+    if res:
+        regdescr = res.group(1) 
+    else:
+        print('E: invalid module format, Register Description frame not found')
+        print('module contents: ') + text[:1000]
+        sys.exit(1)
+    
+    return mname, baddr, suffixes, regsum, regdescr
+    
 #-------------------------------------------------------------------------------
-def namegen(fullpath, ext):
-    basename = os.path.basename(fullpath)
-    name     = os.path.splitext(basename)[0]
-    return name + os.path.extsep + ext
-#-------------------------------------------------------------------------------
-def parse(text):
+def parse_regsum(text):
     main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
-        
-    mname       = lines[0].split()[0]
-    baddrs      = lines[1].split()
-    regsuffixes = lines[2].split()
-    
-    if not regsuffixes:
-        regsuffixes = ['']
                        
     records = []
     
@@ -127,19 +181,95 @@ def parse(text):
                     records.append(fields)
                     fields = None
                         
-    return records, mname, baddrs, regsuffixes
+    return records
     
 #-------------------------------------------------------------------------------
-def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
+def parse_regdescr_table(text):
+
+    main_pattern = '(\w+) +(\d+(?::\d+)*) +(\w+) +(\w+) +(.+)'
+
+    lines = text.splitlines()
+
+    table   = []
+    row     = []
+    col_pos = []
+
+    for i, l in enumerate(lines, start = 1):
+        res = re.match(main_pattern, l)
+        if res:
+            if row:
+                table.append(row)
+                row     = []
+                col_pos = []
+
+            items = res.groups()
+            for i in items:
+                row.append([i])
+            for i in row:
+                col_pos.append( l.index(i[0]) )
+
+        else:
+            if not row:
+                continue
+
+            col1 = l[:col_pos[1]].strip()
+            col5 = l[col_pos[4]:].strip()
+            if col1:
+                row[0].append(col1)
+            if col5:
+                row[4].append(col5)
+
+    if row:
+        table.append(row)
+
+    return table
+
+#-------------------------------------------------------------------------------
+def parse_regdescr(text):
+
+    table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
+    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
+
+    res = re.search(main_pattern, text, re.DOTALL)
+
+    header  = res.groupdict()['Header'].strip()
+    info    = res.groupdict()['Info'].strip()
+    details = res.groupdict()['Details'].strip()
+    bittext = res.groupdict()['Bits'].strip()
+    
+    
+    info    = re.sub('\n\n+', '\n', info)
+    details = re.sub('\n\n+', '\n', details)
+        
+    bittables = re.split(table_header, bittext)
+    bittable = []
+    for bt in bittables:
+        bittable += parse_regdescr_table(bt)
+    
+    bitdata = []
+    for item in bittable:
+        bname   = ''.join(item[0])
+        bname   = re.sub('\(.+\)', '', bname)
+        bname     = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname).upper()
+        bnum    = item[1][0]
+        btype   = item[2][0]
+        bresval = item[3][0]
+        bdescr  = item[4]
+        bitdata.append([bname, bnum, btype, bresval, bdescr])
+    
+    return header, info, details, bitdata, bittables
+
+#-------------------------------------------------------------------------------
+def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetails):
     
     sout  = title0
     sout += title1 + title2
     sout += title1 + os.linesep
-    sout += title1 + 'Module name: ' + mod_name + os.linesep
+    sout += title1 + 'Module name: PS7_' + mod_name.upper() + os.linesep
     sout += title3 + os.linesep
-    sout += '#ifndef ' + mod_name + '_H'  + os.linesep
-    sout += '#define ' + mod_name + '_H'  + os.linesep*2
-    sout += '#include <pmodmap.h>' + os.linesep*2
+    sout += '#ifndef PS7_' + mod_name.upper() + '_H'  + os.linesep
+    sout += '#define PS7_' + mod_name.upper() + '_H'  + os.linesep*2
+    sout += '#include <ps7modmap.h>' + os.linesep*2
     sout += \
     '//------------------------------------------------------------------------------' + os.linesep + \
     '//'                                                                               + os.linesep + \
@@ -150,7 +280,7 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
     if style == 'macro':
         prefix = '#define '
         prefix2 = '  ('
-        suffix = ')'
+        suffix = 'UL)'
     elif style == 'intptr':
         prefix = 'const uintptr_t '
         prefix2 = ' = '
@@ -164,12 +294,11 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
         
         max_name_len = 0
         max_type_len = 0
-        reg_suffix   = reg_suffixes[ba_idx]
+        reg_suffix   = reg_suffixes[ba_idx] if reg_suffixes else ''
         
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
         
-        for r in records:
-            #print(r)
+        for r in regdata:
             reg_name_len = len( r[0] + suffix_sep + reg_suffix)
             if reg_name_len > max_name_len:
                 max_name_len = reg_name_len
@@ -178,7 +307,7 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
             if type_len > max_type_len:
                 max_type_len = type_len
                 
-        baddr = base_addr + '_ADDR'
+        baddr = base_addr.upper() + '_ADDR'
         sout += '//' + os.linesep + '//    ' + mod_name + suffix_sep + reg_suffix + ' MMRs' + os.linesep + '//' + os.linesep
         
         #-----------------------------------------------------------------------
@@ -197,15 +326,20 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
             sout += '{' + os.linesep
                           
         sfx = suffix
-        for idx, r in enumerate(records, start=1):
-            if style == 'enum' and idx == len(records):
+        for idx, r in enumerate(regdata, start = 1):
+            if style == 'enum' and idx == len(regdata):
                 sfx = ' '
                 
             if r[0]:
-                if len(reg_suffixes[ba_idx]):
-                    reg_name = r[0] + suffix_sep + reg_suffix
+                if reg_suffixes:
+                    if len(reg_suffixes[ba_idx]):
+                        reg_name = r[0] + suffix_sep + reg_suffix
+                    else:
+                        reg_name = r[0]
                 else:
                     reg_name = r[0]
+                    
+                reg_name = reg_name.upper()
                     
                 if len(r[2]) < 2:
                     r[2] = ' ' + r[2]
@@ -225,9 +359,109 @@ def generate_output(records, name, style, mod_name, base_addrs, reg_suffixes):
             
         sout += '//------------------------------------------------------------------------------' + os.linesep
         
-    sout +=  os.linesep + '#endif // ' + mod_name + '_H'  + os.linesep
+        
+    if style == 'macro':
+        prefix2 = '  '
+        suffix = ''
+        
+    for reg in regdetails:   # reg: list[ header, info, details, bitdata, bittables ]
+        sout += os.linesep +'//------------------------------------------------------------------------------' + os.linesep
+        sout += '//' + os.linesep
+        sout += '// ' + reg[0] + os.linesep  # header
+        sout += '//' + os.linesep
+
+        regname = re.match('Name +(\w+) *\n', reg[1]).groups()[0]
+        info    = re.sub('^', '// ', reg[1], flags=re.MULTILINE)  
+        details = re.sub('^', '// ', reg[2], flags=re.MULTILINE)  
+        
+        sout += info + os.linesep
+        sout += '//' + os.linesep
+        sout += details + os.linesep
+        sout += '//' + os.linesep
+        
+        bitrecs = []
+        valuelen  = len('0x00000000') if style == 'intptr' else len('0x00000000UL')
+        for row in reg[3]:                   # table row
+            name  = row[0].upper()
+            bits  = row[1]
+            btype = row[2]
+            rval  = row[3]
+            descr = row[4]
+            
+            res = re.match('(\d+):*(\d+)*', bits)
+            if not res:
+                print('E: invalid bits number[s]: ' + bits)
+            
+            bitlist = res.groups()
+            if bitlist[1] == None:
+                bpos  = bitlist[0]
+                bmask = '0x{:>08X}'.format(1 << int(bpos))
+            else:
+                bpos   = bitlist[1]
+                brange = int(bitlist[0])-int(bpos) + 1
+                bmask  = '0x{:>08X}'.format( (int('1'*brange, 2) ) << int(bpos))
+            
+            if not style == 'intptr':
+                bmask += 'UL'
+                bpos  += 'UL'
+                
+            bitrecs.append([ name, bmask, bpos, bits, btype, rval, descr])
+        
+        maxnamelen = 0
+        for br in bitrecs:
+            namelen = len(br[0])
+            if namelen > maxnamelen:
+                maxnamelen = namelen
+
+        comment_offset = maxnamelen + valuelen + len('_MASK' + prefix + prefix2 + suffix) + 4
+                    
+        sfx = suffix
+        if style == 'enum':
+            sout += 'enum T' + regname.upper() + os.linesep
+            sout += '{' + os.linesep
+            
+        for idx, br in enumerate(bitrecs, start = 1):
+            if br[0] == 'RESERVED':
+                sout += '// ' + br[0] + ' '*(comment_offset - len(br[0])) + 'Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
+            else:
+                sout += ' '*comment_offset + '// Properties: ' + ('Bit: ' if br[3].find(':') == -1 else 'Bits: ') + br[3] + ', Type: ' + br[4] + ', Reset Value: ' + br[5] + os.linesep
+                sout += prefix + br[0] + '_MASK' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[1] + sfx +  ' '*4 +                         '// ' + (br[6][0] if len(br[6]) > 0 else '') + os.linesep
+                if style == 'enum' and idx == len(bitrecs):
+                    sfx = ' '
+                sout += prefix + br[0] + '_BPOS' + ' '*(maxnamelen-len(br[0])) + prefix2 + br[2] + sfx +  ' '*(4+len(br[1])-len(br[2])) + '// ' + (br[6][1] if len(br[6]) > 1 else '') + os.linesep
+                for d in br[6][2:]:
+                    sout += ' '*comment_offset + '// ' + d + os.linesep
+        
+            sout += os.linesep
+            
+        if style == 'enum':
+            sout += '};' + os.linesep
+            
+    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep
     return sout        
 
+#-------------------------------------------------------------------------------
+def generate_common_header(mods):
+
+    sout  = title0
+    sout += title1 + title2
+    sout += title1 + os.linesep
+    sout += title1 + 'Common PS7 MMRs file' + os.linesep
+    sout += title3 + os.linesep
+    sout += '#ifndef PS7_MMRS_H' + os.linesep
+    sout += '#define PS7_MMRS_H' + os.linesep*2
+    sout += \
+    '//------------------------------------------------------------------------------' + os.linesep
+
+    for m in mods:
+        sout += '#include <' + m + '>' + os.linesep
+    
+    sout += \
+    '//------------------------------------------------------------------------------' + os.linesep 
+    
+    sout +=  os.linesep + '#endif // PS7_MMRS_H' + os.linesep
+    return sout        
+    
 #-------------------------------------------------------------------------------
 
 optlist, infiles = getopt.gnu_getopt(sys.argv[1:], 's:o:')
@@ -238,7 +472,6 @@ if not infiles:
     print('        -s - style: macro, intptr or enum, default intptr')
     print('        -o - output path, if ommited then the current path is used')
     sys.exit(0)
-
 
 style  = 'intptr'
 opath  = os.getcwd()
@@ -252,14 +485,27 @@ for i in optlist:
 infile = infiles[0]
 text   = read_file(infile)
 
-records, mod_names, base_addrs, reg_suffixs = parse(text)
-out = generate_output(records, 'slon', style, mod_names, base_addrs, reg_suffixs)
-
-outfile = namegen(infile, 'h')
-
-write_file(opath + os.sep + outfile, out)
-
-#print(opath + os.sep + outfile)
+mods_raw = split_modules(text)
+mods = []
+print('*'*80)
+print('generating header files for style "' + style + '"')
+for m in mods_raw:
+    mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
+    print('processing module ', mname + '... ', end='')
+    regdata = parse_regsum(regsum)
+    regbits_raw = split_regs(regdescr)
+    regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
+    out = generate_output(regdata, style, mname, baddr, rsuffixes, regdetails)
+    outfile = 'ps7' + mname.lower() + '.h'
+    mods.append(outfile)
+    if not os.path.exists(opath):
+        os.makedirs(opath)
+    write_file(opath + os.sep + outfile, out)
+    print(' '*(16-len(mname)), 'done')
+    
+write_file(opath + os.sep + 'ps7mmrs.h', generate_common_header(mods)) 
+    
+print('*'*80)
+print('')    
 
 #-------------------------------------------------------------------------------
-
