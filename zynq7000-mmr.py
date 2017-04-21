@@ -242,7 +242,7 @@ def parse_regdescr_table(text):
 def parse_regdescr(text):
 
     table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
-    main_pattern = '(?P<Header>Register \(\w+\**\) \w+\**)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
+    main_pattern = '(?P<Header>Register \(\w+\**\) \w+\**)\s+(?P<Info>Name.+)(?P<Details>Register +\w+.+Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
 
