@@ -125,7 +125,7 @@ def parse_module(text):
     
 #-------------------------------------------------------------------------------
 def parse_regsum(text):
-    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
+    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+([\w:]+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
                        
@@ -138,33 +138,39 @@ def parse_regsum(text):
     col_last_pos = 0
     
     for i, l in enumerate(lines, start = 1):
-        res = re.match('<-+>', l)
-        if res:
-            if fields:
-                records.append(fields)
-                fields = None
-                
-            records.append(['', '', '', '', '', ''])
-            continue
+#       res = re.match('<-+>', l)
+#       if res:
+#           if fields:
+#               res =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+#               fields[4] = res if len(res) > 0 else [fields[4]]
+#               records.append(fields)
+#               fields = None
+#
+#           records.append(['', '', '', '', [], ''])
+#           continue
 
         res = re.match(main_pattern, l)
         if res:
             if fields:
+                rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                 records.append(fields)
+                
             fields = list( res.groups() )
             fields[-1].strip()    
-            col1_pos     = l.index(fields[1])
-            col3_pos     = l.index(fields[3])
-            col4_pos     = l.index(fields[4])
-            col_last_pos = l.index(fields[-1])
+            col1_pos  = l.index(fields[1])
+            col3_pos  = l.index(fields[3])
+            col4_pos  = l.index(fields[4])
+            col5_pos  = l.index(fields[5])
         else:
             if not fields:
                 continue
             else:
                 if len( l.strip() ):
-                    col0     = l[0:col1_pos].strip()
-                    col3     = l[col3_pos:col4_pos].strip()
-                    col_last = l[col_last_pos:].strip()
+                    col0  = l[0:col1_pos].strip()
+                    col3  = l[col3_pos:col4_pos].strip()
+                    col4  = l[col4_pos:col5_pos].strip()
+                    col5  = l[col5_pos:].strip()
 
                     if len(col0):
                         fields[0] += col0
@@ -172,15 +178,23 @@ def parse_regsum(text):
                     if len(col3):
                         fields[3] += col3
                         
-                    if len(col_last):
-                        fields[-1] += ' ' + col_last
+                    if len(col4):
+                        fields[4] += ' ' + col4
+                        
+                    if len(col5):
+                        fields[5] += ' ' + col5
 
                     if i == len(lines):
+                        rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                        fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                         records.append(fields)
+                        fields = None
                 else:
+                    rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                    fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                     records.append(fields)
                     fields = None
-                        
+                    
     return records
     
 #-------------------------------------------------------------------------------
@@ -228,7 +242,7 @@ def parse_regdescr_table(text):
 def parse_regdescr(text):
 
     table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
-    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
+    main_pattern = '(?P<Header>Register \(\w+\**\) \w+\**)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
 
@@ -237,7 +251,13 @@ def parse_regdescr(text):
     details = res.groupdict()['Details'].strip()
     bittext = res.groupdict()['Bits'].strip()
     
-    
+    res = re.match('Register +\((\w+\**)\) +(\w+\**)', header)
+    modname = res.groups()[0]
+    regname = res.groups()[1]
+    modname = modname[:-1] + '_' if re.match('.+\*', modname) else ''
+    regname = regname[:-1] + '_' if re.match('.+\*', regname) else ''
+
+    header  = re.sub('\*', '', header)
     info    = re.sub('\n\n+', '\n', info)
     details = re.sub('\n\n+', '\n', details)
         
@@ -250,7 +270,9 @@ def parse_regdescr(text):
     for item in bittable:
         bname   = ''.join(item[0])
         bname   = re.sub('\(.+\)', '', bname)
-        bname     = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname).upper()
+        bname   = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname)
+        if bname != 'reserved':
+            bname   = (modname + regname + bname).upper()
         bnum    = item[1][0]
         btype   = item[2][0]
         bresval = item[3][0]
@@ -297,7 +319,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         reg_suffix   = reg_suffixes[ba_idx] if reg_suffixes else ''
         
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
-        
+
         for r in regdata:
             reg_name_len = len( r[0] + suffix_sep + reg_suffix)
             if reg_name_len > max_name_len:
@@ -325,6 +347,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             sout += 'enum T' + mod_name + suffix_sep + reg_suffix + os.linesep
             sout += '{' + os.linesep
                           
+        #print(regdata)
         sfx = suffix
         for idx, r in enumerate(regdata, start = 1):
             if style == 'enum' and idx == len(regdata):
@@ -341,16 +364,21 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                     
                 reg_name = reg_name.upper()
                     
+                addr_offset = r[1]
+                rwidth = r[2]
                 if len(r[2]) < 2:
-                    r[2] = ' ' + r[2]
+                    rwidth = ' ' + r[2]
                     
+                rtype = r[3]
                 if len(r[3]) < max_type_len:
-                    r[3] += (max_type_len - len(r[3]))*' '
+                      rtype = r[3] + (max_type_len - len(r[3]))*' '
                     
-                if len(r[4]) < 10:
-                    r[4] += ( 10-len(r[4]) )*' '
-                #                   Name                                                 Address                                     Width         Type        Reset Value       Description
-                sout += prefix + reg_name + (max_name_len - len(reg_name))*' ' + prefix2 + baddr + ' + ' + r[1] + sfx + ' //  ' + r[2] + 4*' ' + r[3] + 4*' ' + r[4] + 4*' ' + r[5]  + os.linesep
+                resval = r[4][ba_idx] if len(r[4]) > 1 else r[4][0]
+                if len(resval) < 10:
+                     resval = resval + ( 10-len(resval) )*' '
+                
+                sout += prefix + reg_name + (max_name_len - len(reg_name))*' ' + prefix2 + baddr + ' + ' + addr_offset + sfx + \
+                ' //  ' + rwidth + 4*' ' + rtype + 4*' ' + resval + 4*' ' + r[5]  + os.linesep
             else:
                 sout += os.linesep
             
