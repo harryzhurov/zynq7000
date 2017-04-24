@@ -200,7 +200,7 @@ def parse_regsum(text):
 #-------------------------------------------------------------------------------
 def parse_regdescr_table(text):
 
-    main_pattern = '(\w+) +(\d+(?::\d+)*) +(\w+) +(\w+) +(.+)'
+    main_pattern = '(\w+) +(\d+(?::\d+)*) +([\w,]+) +(\w+) +(.+)'
 
     lines = text.splitlines()
 
@@ -208,7 +208,7 @@ def parse_regdescr_table(text):
     row     = []
     col_pos = []
 
-    for i, l in enumerate(lines, start = 1):
+    for l in lines:
         res = re.match(main_pattern, l)
         if res:
             if row:
@@ -219,19 +219,23 @@ def parse_regdescr_table(text):
             items = res.groups()
             for i in items:
                 row.append([i])
-            for i in row:
-                col_pos.append( l.index(i[0]) )
-
+                
+            for pos in res.regs[1:]:
+                col_pos.append( pos[0] )
+                
         else:
             if not row:
                 continue
 
-            col1 = l[:col_pos[1]].strip()
-            col5 = l[col_pos[4]:].strip()
-            if col1:
-                row[0].append(col1)
-            if col5:
-                row[4].append(col5)
+            col0 = l[          :col_pos[1]].strip()
+            col2 = l[col_pos[2]:col_pos[3]].strip()
+            col4 = l[col_pos[4]:].strip()
+            if col0:
+                row[0].append(col0)
+            if col2:
+                row[2].append(col2)
+            if col4:
+                row[4].append(col4)
 
     if row:
         table.append(row)
@@ -245,6 +249,9 @@ def parse_regdescr(text):
     main_pattern = '(?P<Header>Register \(\w+\**\) \w+\**)\s+(?P<Info>Name.+)(?P<Details>Register +\w+.+Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
+    
+    if not res:
+        print(text)
 
     header  = res.groupdict()['Header'].strip()
     info    = res.groupdict()['Info'].strip()
@@ -274,7 +281,7 @@ def parse_regdescr(text):
         if bname != 'reserved':
             bname   = (modname + regname + bname).upper()
         bnum    = item[1][0]
-        btype   = item[2][0]
+        btype   = ''.join(item[2])
         bresval = item[3][0]
         bdescr  = item[4]
         bitdata.append([bname, bnum, btype, bresval, bdescr])
