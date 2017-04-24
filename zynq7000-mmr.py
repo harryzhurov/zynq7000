@@ -472,7 +472,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         if style == 'enum':
             sout += '};' + os.linesep
             
-    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep
+    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep*2
     return sout        
 
 #-------------------------------------------------------------------------------
