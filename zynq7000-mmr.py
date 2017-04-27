@@ -125,7 +125,7 @@ def parse_module(text):
     
 #-------------------------------------------------------------------------------
 def parse_regsum(text):
-    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+(\w+)\s+([\w\s-]+)'
+    main_pattern = '(\w+)\s+(0x[0-9a-fA-F]+)\s+(\d+)\s+(\w+)\s+([\w:]+)\s+([\w\s-]+)'
     
     lines = text.splitlines()
                        
@@ -138,33 +138,39 @@ def parse_regsum(text):
     col_last_pos = 0
     
     for i, l in enumerate(lines, start = 1):
-        res = re.match('<-+>', l)
-        if res:
-            if fields:
-                records.append(fields)
-                fields = None
-                
-            records.append(['', '', '', '', '', ''])
-            continue
+#       res = re.match('<-+>', l)
+#       if res:
+#           if fields:
+#               res =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+#               fields[4] = res if len(res) > 0 else [fields[4]]
+#               records.append(fields)
+#               fields = None
+#
+#           records.append(['', '', '', '', [], ''])
+#           continue
 
         res = re.match(main_pattern, l)
         if res:
             if fields:
+                rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                 records.append(fields)
+                
             fields = list( res.groups() )
             fields[-1].strip()    
-            col1_pos     = l.index(fields[1])
-            col3_pos     = l.index(fields[3])
-            col4_pos     = l.index(fields[4])
-            col_last_pos = l.index(fields[-1])
+            col1_pos  = l.index(fields[1])
+            col3_pos  = l.index(fields[3])
+            col4_pos  = l.index(fields[4])
+            col5_pos  = l.index(fields[5])
         else:
             if not fields:
                 continue
             else:
                 if len( l.strip() ):
-                    col0     = l[0:col1_pos].strip()
-                    col3     = l[col3_pos:col4_pos].strip()
-                    col_last = l[col_last_pos:].strip()
+                    col0  = l[0:col1_pos].strip()
+                    col3  = l[col3_pos:col4_pos].strip()
+                    col4  = l[col4_pos:col5_pos].strip()
+                    col5  = l[col5_pos:].strip()
 
                     if len(col0):
                         fields[0] += col0
@@ -172,21 +178,29 @@ def parse_regsum(text):
                     if len(col3):
                         fields[3] += col3
                         
-                    if len(col_last):
-                        fields[-1] += ' ' + col_last
+                    if len(col4):
+                        fields[4] += ' ' + col4
+                        
+                    if len(col5):
+                        fields[5] += ' ' + col5
 
                     if i == len(lines):
+                        rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                        fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                         records.append(fields)
+                        fields = None
                 else:
+                    rvals =  re.findall('\w+\:\s+(0x[0-9a-fA-F]+)', fields[4])
+                    fields[4] = rvals if len(rvals) > 0 else [fields[4]]
                     records.append(fields)
                     fields = None
-                        
+                    
     return records
     
 #-------------------------------------------------------------------------------
 def parse_regdescr_table(text):
 
-    main_pattern = '(\w+) +(\d+(?::\d+)*) +(\w+) +(\w+) +(.+)'
+    main_pattern = '(\w+) +(\d+(?::\d+)*) +([\w,]+) +(\w+) +(.+)'
 
     lines = text.splitlines()
 
@@ -194,7 +208,7 @@ def parse_regdescr_table(text):
     row     = []
     col_pos = []
 
-    for i, l in enumerate(lines, start = 1):
+    for l in lines:
         res = re.match(main_pattern, l)
         if res:
             if row:
@@ -205,19 +219,23 @@ def parse_regdescr_table(text):
             items = res.groups()
             for i in items:
                 row.append([i])
-            for i in row:
-                col_pos.append( l.index(i[0]) )
-
+                
+            for pos in res.regs[1:]:
+                col_pos.append( pos[0] )
+                
         else:
             if not row:
                 continue
 
-            col1 = l[:col_pos[1]].strip()
-            col5 = l[col_pos[4]:].strip()
-            if col1:
-                row[0].append(col1)
-            if col5:
-                row[4].append(col5)
+            col0 = l[          :col_pos[1]].strip()
+            col2 = l[col_pos[2]:col_pos[3]].strip()
+            col4 = l[col_pos[4]:].strip()
+            if col0:
+                row[0].append(col0)
+            if col2:
+                row[2].append(col2)
+            if col4:
+                row[4].append(col4)
 
     if row:
         table.append(row)
@@ -228,16 +246,25 @@ def parse_regdescr_table(text):
 def parse_regdescr(text):
 
     table_header = 'Field Name +Bits +Type +Reset Value +Description\n'
-    main_pattern = '(?P<Header>Register \(\w+\) \w+)\s+(?P<Info>Name.+)(?P<Details>Register[ \w]+Details.+?)'+ table_header + '(?P<Bits>.+)'
+    main_pattern = '(?P<Header>Register \(\w+\**\) \w+\**)\s+(?P<Info>Name.+)(?P<Details>Register +\w+.+Details.+?)'+ table_header + '(?P<Bits>.+)'
 
     res = re.search(main_pattern, text, re.DOTALL)
+    
+    if not res:
+        print(text)
 
     header  = res.groupdict()['Header'].strip()
     info    = res.groupdict()['Info'].strip()
     details = res.groupdict()['Details'].strip()
     bittext = res.groupdict()['Bits'].strip()
     
-    
+    res = re.match('Register +\((\w+\**)\) +(\w+\**)', header)
+    modname = res.groups()[0]
+    regname = res.groups()[1]
+    modname = modname[:-1] + '_' if re.match('.+\*', modname) else ''
+    regname = regname[:-1] + '_' if re.match('.+\*', regname) else ''
+
+    header  = re.sub('\*', '', header)
     info    = re.sub('\n\n+', '\n', info)
     details = re.sub('\n\n+', '\n', details)
         
@@ -250,9 +277,11 @@ def parse_regdescr(text):
     for item in bittable:
         bname   = ''.join(item[0])
         bname   = re.sub('\(.+\)', '', bname)
-        bname     = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname).upper()
+        bname   = re.sub('([a-z])([A-Z])', '\g<1>' + '_' + '\g<2>', bname)
+        if bname != 'reserved':
+            bname   = (modname + regname + bname).upper()
         bnum    = item[1][0]
-        btype   = item[2][0]
+        btype   = ''.join(item[2])
         bresval = item[3][0]
         bdescr  = item[4]
         bitdata.append([bname, bnum, btype, bresval, bdescr])
@@ -281,7 +310,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         prefix = '#define '
         prefix2 = '  ('
         suffix = 'UL)'
-    elif style == 'intptr':
+    elif style == 'const':
         prefix = 'const uintptr_t '
         prefix2 = ' = '
         suffix = ';'
@@ -297,7 +326,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         reg_suffix   = reg_suffixes[ba_idx] if reg_suffixes else ''
         
         suffix_sep = '' if reg_suffix.isdigit() or len(reg_suffix) == 0 else '_'
-        
+
         for r in regdata:
             reg_name_len = len( r[0] + suffix_sep + reg_suffix)
             if reg_name_len > max_name_len:
@@ -325,6 +354,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
             sout += 'enum T' + mod_name + suffix_sep + reg_suffix + os.linesep
             sout += '{' + os.linesep
                           
+        #print(regdata)
         sfx = suffix
         for idx, r in enumerate(regdata, start = 1):
             if style == 'enum' and idx == len(regdata):
@@ -341,16 +371,21 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                     
                 reg_name = reg_name.upper()
                     
+                addr_offset = r[1]
+                rwidth = r[2]
                 if len(r[2]) < 2:
-                    r[2] = ' ' + r[2]
+                    rwidth = ' ' + r[2]
                     
+                rtype = r[3]
                 if len(r[3]) < max_type_len:
-                    r[3] += (max_type_len - len(r[3]))*' '
+                      rtype = r[3] + (max_type_len - len(r[3]))*' '
                     
-                if len(r[4]) < 10:
-                    r[4] += ( 10-len(r[4]) )*' '
-                #                   Name                                                 Address                                     Width         Type        Reset Value       Description
-                sout += prefix + reg_name + (max_name_len - len(reg_name))*' ' + prefix2 + baddr + ' + ' + r[1] + sfx + ' //  ' + r[2] + 4*' ' + r[3] + 4*' ' + r[4] + 4*' ' + r[5]  + os.linesep
+                resval = r[4][ba_idx] if len(r[4]) > 1 else r[4][0]
+                if len(resval) < 10:
+                     resval = resval + ( 10-len(resval) )*' '
+                
+                sout += prefix + reg_name + (max_name_len - len(reg_name))*' ' + prefix2 + baddr + ' + ' + addr_offset + sfx + \
+                ' //  ' + rwidth + 4*' ' + rtype + 4*' ' + resval + 4*' ' + r[5]  + os.linesep
             else:
                 sout += os.linesep
             
@@ -380,7 +415,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += '//' + os.linesep
         
         bitrecs = []
-        valuelen  = len('0x00000000') if style == 'intptr' else len('0x00000000UL')
+        valuelen  = len('0x00000000') if style == 'const' else len('0x00000000UL')
         for row in reg[3]:                   # table row
             name  = row[0].upper()
             bits  = row[1]
@@ -401,7 +436,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                 brange = int(bitlist[0])-int(bpos) + 1
                 bmask  = '0x{:>08X}'.format( (int('1'*brange, 2) ) << int(bpos))
             
-            if not style == 'intptr':
+            if not style == 'const':
                 bmask += 'UL'
                 bpos  += 'UL'
                 
@@ -437,7 +472,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         if style == 'enum':
             sout += '};' + os.linesep
             
-    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep
+    sout +=  os.linesep + '#endif // PS7_' + mod_name.upper() + '_H'  + os.linesep*2
     return sout        
 
 #-------------------------------------------------------------------------------
@@ -467,13 +502,13 @@ def generate_common_header(mods):
 optlist, infiles = getopt.gnu_getopt(sys.argv[1:], 's:o:')
 
 if not infiles:
-    print('\n Usage: ug585.py [options] txt_file')
+    print('\n Usage: zynq7000-mmr.py [options] txt_file')
     print('     where options:')
-    print('        -s - style: macro, intptr or enum, default intptr')
+    print('        -s - style: const, macro or enum, default const')
     print('        -o - output path, if ommited then the current path is used')
     sys.exit(0)
 
-style  = 'intptr'
+style  = 'const'
 opath  = os.getcwd()
 
 for i in optlist:
@@ -488,10 +523,19 @@ text   = read_file(infile)
 mods_raw = split_modules(text)
 mods = []
 print('*'*80)
-print('generating header files for style "' + style + '"')
+print('generating header files for style "' + style + '"' + os.linesep)
+print('-'*80)
+print('#   Module          Per Mod    Total     Bit Fields')
+print('-'*80)
+nmod    = 1
+regs    = 0
+regstot = 0
+bfields = 0
 for m in mods_raw:
     mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
-    print('processing module ', mname + '... ', end='')
+    modnum  = '{:>2}'.format( nmod )
+    print(modnum + '  ', mname, end='')
+    nmod += 1
     regdata = parse_regsum(regsum)
     regbits_raw = split_regs(regdescr)
     regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
@@ -501,8 +545,29 @@ for m in mods_raw:
     if not os.path.exists(opath):
         os.makedirs(opath)
     write_file(opath + os.sep + outfile, out)
-    print(' '*(16-len(mname)), 'done')
+    regs_count_per_module = len(regdata)
+    regs_count_total      = regs_count_per_module*(len(rsuffixes) if rsuffixes else 1)
+    bitfields_count       = 0
     
+    for idx, regdet in enumerate(regdetails):
+        bitfields = regdet[3]
+        for bf in bitfields:
+            if i[0] != 'reserved':
+                bitfields_count += 1
+            
+    regcnt_per_mod = str(regs_count_per_module)
+    regcnt_total   = str(regs_count_total)
+    bfcnt          = str(bitfields_count)
+    
+    regs     += regs_count_per_module
+    regstot += regs_count_total
+    bfields += bitfields_count
+                
+    print(' '*(16-len(mname))  +  regcnt_per_mod + ' '*(12-len(regcnt_per_mod)) + regcnt_total + ' '*(12-len(regcnt_total)) + bfcnt )
+    
+print('-'*80)
+print(' Summary:' + ' '*(20-len(' Summary:'))  +  str(regs) + ' '*(12-len(str(regs))) + str(regstot) + ' '*(12-len(str(regstot))) + str(bfields) )
+        
 write_file(opath + os.sep + 'ps7mmrs.h', generate_common_header(mods)) 
     
 print('*'*80)
