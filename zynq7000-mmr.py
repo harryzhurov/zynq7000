@@ -310,7 +310,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         prefix = '#define '
         prefix2 = '  ('
         suffix = 'UL)'
-    elif style == 'intptr':
+    elif style == 'const':
         prefix = 'const uintptr_t '
         prefix2 = ' = '
         suffix = ';'
@@ -415,7 +415,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
         sout += '//' + os.linesep
         
         bitrecs = []
-        valuelen  = len('0x00000000') if style == 'intptr' else len('0x00000000UL')
+        valuelen  = len('0x00000000') if style == 'const' else len('0x00000000UL')
         for row in reg[3]:                   # table row
             name  = row[0].upper()
             bits  = row[1]
@@ -436,7 +436,7 @@ def generate_output(regdata, style, mod_name, base_addrs, reg_suffixes, regdetai
                 brange = int(bitlist[0])-int(bpos) + 1
                 bmask  = '0x{:>08X}'.format( (int('1'*brange, 2) ) << int(bpos))
             
-            if not style == 'intptr':
+            if not style == 'const':
                 bmask += 'UL'
                 bpos  += 'UL'
                 
@@ -502,13 +502,13 @@ def generate_common_header(mods):
 optlist, infiles = getopt.gnu_getopt(sys.argv[1:], 's:o:')
 
 if not infiles:
-    print('\n Usage: ug585.py [options] txt_file')
+    print('\n Usage: zynq7000-mmr.py [options] txt_file')
     print('     where options:')
-    print('        -s - style: macro, intptr or enum, default intptr')
+    print('        -s - style: const, macro or enum, default const')
     print('        -o - output path, if ommited then the current path is used')
     sys.exit(0)
 
-style  = 'intptr'
+style  = 'const'
 opath  = os.getcwd()
 
 for i in optlist:
@@ -523,10 +523,19 @@ text   = read_file(infile)
 mods_raw = split_modules(text)
 mods = []
 print('*'*80)
-print('generating header files for style "' + style + '"')
+print('generating header files for style "' + style + '"' + os.linesep)
+print('-'*80)
+print('#   Module          Per Mod    Total     Bit Fields')
+print('-'*80)
+nmod    = 1
+regs    = 0
+regstot = 0
+bfields = 0
 for m in mods_raw:
     mname, baddr, rsuffixes, regsum, regdescr = parse_module(m)
-    print('processing module ', mname + '... ', end='')
+    modnum  = '{:>2}'.format( nmod )
+    print(modnum + '  ', mname, end='')
+    nmod += 1
     regdata = parse_regsum(regsum)
     regbits_raw = split_regs(regdescr)
     regdetails  = [parse_regdescr(x) for x in regbits_raw]       # result: header, info, details, bitdata, bittables
@@ -536,8 +545,29 @@ for m in mods_raw:
     if not os.path.exists(opath):
         os.makedirs(opath)
     write_file(opath + os.sep + outfile, out)
-    print(' '*(16-len(mname)), 'done')
+    regs_count_per_module = len(regdata)
+    regs_count_total      = regs_count_per_module*(len(rsuffixes) if rsuffixes else 1)
+    bitfields_count       = 0
     
+    for idx, regdet in enumerate(regdetails):
+        bitfields = regdet[3]
+        for bf in bitfields:
+            if i[0] != 'reserved':
+                bitfields_count += 1
+            
+    regcnt_per_mod = str(regs_count_per_module)
+    regcnt_total   = str(regs_count_total)
+    bfcnt          = str(bitfields_count)
+    
+    regs     += regs_count_per_module
+    regstot += regs_count_total
+    bfields += bitfields_count
+                
+    print(' '*(16-len(mname))  +  regcnt_per_mod + ' '*(12-len(regcnt_per_mod)) + regcnt_total + ' '*(12-len(regcnt_total)) + bfcnt )
+    
+print('-'*80)
+print(' Summary:' + ' '*(20-len(' Summary:'))  +  str(regs) + ' '*(12-len(str(regs))) + str(regstot) + ' '*(12-len(str(regstot))) + str(bfields) )
+        
 write_file(opath + os.sep + 'ps7mmrs.h', generate_common_header(mods)) 
     
 print('*'*80)
