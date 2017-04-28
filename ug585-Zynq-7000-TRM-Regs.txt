@@ -3647,9 +3647,9 @@ LID                                                        As long as this is 1 
                                                            register bit[1] of ECC CONTROL REGISTER
                                                            (0x31)
 
-                   <-----  ------>Register (DDRC*) CHE_CORR_ECC_LOG
+                   <-----  ------>Register (DDRC*) CHE_CORR_ECC_ADDR
 
-Name                    DDRC_CHE_CORR_ECC_LOG_REG
+Name                    DDRC_CHE_CORR_ECC_ADDR_REG
 Relative Address        0x000000CC
 Absolute Address        0xF80060CC
 Width                   31 bits
@@ -3657,7 +3657,7 @@ Access Type             ro
 Reset Value             0x00000000
 Description             ECC error correction address log
 
-        Register DDRC_CHE_CORR_ECC_LOG_REG Details
+        Register DDRC_CHE_CORR_ECC_ADDR_REG Details
 
       Field Name         Bits     Type    Reset Value                          Description
 CORR_ECC_LOG_BA         30:28     ro      0x0              Bank [2:0]
@@ -3732,9 +3732,9 @@ T_71_64                                                  correctable ECC error. 
                                                          Bits[68:64] carries these 5-bits. Bits[71:69] are
                                                          always 0.
 
-                   <-----  ------>Register (DDRC*) CHE_CORR_ECC_DATA_71_64
+                   <-----  ------>Register (DDRC*) CHE_UNCORR_ECC_LOG
 
-Name                    DDRC_CHE_CORR_ECC_DATA_71_64_REG
+Name                    DDRC_CHE_UNCORR_ECC_LOG_REG
 Relative Address        0x000000DC
 Absolute Address        0xF80060DC
 Width                   1 bits
