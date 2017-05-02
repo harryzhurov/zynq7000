@@ -26229,8 +26229,8 @@ Set                     31:0      rw     0xFFFF           The ICDISERs provide a
                                                           interrupt is RAZ/WI to Non-secure access.
                                                           ICDISER0 is banked for each connected processor.
 
-<-----  ------>Register (MPCORE) GIC_ICDICER0*
-Name                    GIC_ICDICER0
+<-----  ------>Register (MPCORE) GIC_ICDICER*
+Name                    GIC_ICDICER
 Software Name           GIC_DISABLE
 Relative Address        0x00001180
 Absolute Address        0xF8F01180
@@ -26247,7 +26247,7 @@ ICDICER0                  0xF8F01180
 ICDICER1                  0xF8F01184
 ICDICER2                  0xF8F01188
 
-         Register GIC_ICDICER0 Details
+         Register GIC_ICDICER Details
 
         Field Name        Bits     Type    Reset Value                         Description
 Clear                    31:0      rw     0xFFFF             The ICDICERs provide a Clear-enable bit for each
@@ -26411,7 +26411,7 @@ Access Type                 ro
 Reset Value                 0x00000000
 Description                 Interrupt Processor Targets Register 0
 
-           Register GIC_ICDISPR Details
+           Register GIC_ICDISPR0 Details
            The ICDIPTR0 register is used to indicate the targets of interrupts ID#0-ID#3.
 
       Field Name             Bits     Type    Reset Value                       Description
