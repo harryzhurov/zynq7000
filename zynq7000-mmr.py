@@ -25,18 +25,18 @@ title3 = \
 '//*      This file is part of the zynq7000 library project.'                        + os.linesep +\
 '//*      Visit https://github.com/emb-lib/zynq7000 for new versions.'               + os.linesep +\
 '//*'                                                                                + os.linesep +\
-'//*      Permission is hereby granted, free of charge, to any person'               + os.linesep +\
-'//*      obtaining  a copy of this software and associated documentation'           + os.linesep +\
-'//*      files (the "Software"), to deal in the Software without restriction,'      + os.linesep +\
-'//*      including without limitation the rights to use, copy, modify, merge,'      + os.linesep +\
-'//*      publish, distribute, sublicense, and/or sell copies of the Software,'      + os.linesep +\
-'//*      and to permit persons to whom the Software is furnished to do so,'         + os.linesep +\
-'//*      subject to the following conditions:'                                      + os.linesep +\
+'//*      Permission is hereby granted, free of charge, to any person obtaining'     + os.linesep +\
+'//*      a copy of this software and associated documentation files (the'           + os.linesep +\
+'//*      "Software"), to deal in the Software without restriction, including'       + os.linesep +\
+'//*      without limitation the rights to use, copy, modify, merge, publish,'       + os.linesep +\
+'//*      distribute, sublicense, and/or sell copies of the Software, and to'        + os.linesep +\
+'//*      permit persons to whom the Software is furnished to do so, subject to'     + os.linesep +\
+'//*      the following conditions:'                                                 + os.linesep +\
 '//*'                                                                                + os.linesep +\
 '//*      The above copyright notice and this permission notice shall be included'   + os.linesep +\
 '//*      in all copies or substantial portions of the Software.'                    + os.linesep +\
 '//*'                                                                                + os.linesep +\
-'//*      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,'           + os.linesep +\
+'//*      THE SOFTWARE  IS PROVIDED  "AS IS", WITHOUT  WARRANTY OF  ANY KIND,'       + os.linesep +\
 '//*      EXPRESS  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF'       + os.linesep +\
 '//*      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.'    + os.linesep +\
 '//*      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY'      + os.linesep +\
