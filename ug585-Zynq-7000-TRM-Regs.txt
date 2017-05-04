@@ -25019,8 +25019,8 @@ GIC_ICDIPTR20               0x00001850      32      rw       0x00000000      Int
 GIC_ICDIPTR21               0x00001854      32      rw       0x00000000      Interrupt Processor Targets Register 21
 GIC_ICDIPTR22               0x00001858      32      rw       0x00000000      Interrupt Processor Targets Register 22
 GIC_ICDIPTR23               0x0000185C      32      rw       0x00000000      Interrupt Processor Targets Register 23
-GIC_ICDICFR0                0x00001C00      32      ro       0x00000000      Interrupt Configuration Register 0
-GIC_ICDICFR1                0x00001C04      32      rw       0x00000000      Interrupt Configuration Register 1
+GIC_ICDICFR0                0x00001C00      32      ro       0xAAAAAAAA      Interrupt Configuration Register 0
+GIC_ICDICFR1                0x00001C04      32      ro       0x7DC00000      Interrupt Configuration Register 1
 GIC_ICDICFR2                0x00001C08      32      rw       0x00000000      Interrupt Configuration Register 2
 GIC_ICDICFR3                0x00001C0C      32      rw       0x00000000      Interrupt Configuration Register 3
 GIC_ICDICFR4                0x00001C10      32      rw       0x00000000      Interrupt Configuration Register 4
@@ -27225,7 +27225,7 @@ Relative Address        0x00001C00
 Absolute Address        0xF8F01C00
 Width                   32 bits
 Access Type             ro
-Reset Value             0x00000000
+Reset Value             0xAAAAAAAA
 Description             Interrupt Configuration Register 0
 
         Register GIC_ICDICFR0 Details
@@ -27291,8 +27291,8 @@ Name                     GIC_ICDICFR1
 Relative Address         0x00001C04
 Absolute Address         0xF8F01C04
 Width                    32 bits
-Access Type              rw
-Reset Value              0x00000000
+Access Type              ro
+Reset Value              0x7DC00000
 Description              Interrupt Configuration Register 1
 
         Register GIC_ICDICFR1 Details
@@ -27304,19 +27304,19 @@ Description              Interrupt Configuration Register 1
         the other register is accessible by CPU 1.
 
       Field Name          Bits     Type     Reset Value                          Description
-config_31                31:30     rw      0x0              Configuration for interrupt ID#31 (nIRQ)
+config_31                31:30     ro      0x0              Configuration for interrupt ID#31 (nIRQ)
 (GIC_INT_CFG)                                               01: low-level active
-config_30                29:28     rw      0x0              Configuration for interrupt ID#30 (CPU
+config_30                29:28     ro      0x0              Configuration for interrupt ID#30 (CPU
 (GIC_INT_CFG)                                               watchdog timer)
                                                             11: edge sensitive
-config_29                27:26     rw      0x0              Configuration for interrupt ID#29 (CPU private
+config_29                27:26     ro      0x0              Configuration for interrupt ID#29 (CPU private
 (GIC_INT_CFG)                                               timer)
                                                             11: edge sensitive
-config_28                25:24     rw      0x0              Configuration for interrupt ID#28 (nFIQ)
+config_28                25:24     ro      0x0              Configuration for interrupt ID#28 (nFIQ)
 (GIC_INT_CFG)                                               01: low-level active
-config_27                23:22     rw      0x0              Configuration for interrupt ID#27 (global timer)
+config_27                23:22     ro      0x0              Configuration for interrupt ID#27 (global timer)
 (GIC_INT_CFG)                                               11: edge sensitive
-reserved                 21:0      rw      0x0              Reserved
+reserved                 21:0      ro      0x0              Reserved
 
                    <-----  ------>Register (MPCORE) GIC_ICDICFR2*
 Name                     GIC_ICDICFR2
