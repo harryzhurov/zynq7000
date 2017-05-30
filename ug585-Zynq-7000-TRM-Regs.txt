@@ -30399,7 +30399,7 @@ SMC_RST_CTRL_REG               0x00000234         32      rw      0x00000000    
 OCM_RST_CTRL_REG               0x00000238         32      rw      0x00000000    OCM Software Reset Control
 FPGA_RST_CTRL_REG              0x00000240         32      rw      0x01F33F0F    FPGA Software Reset Control
 A9_CPU_RST_CTRL_REG            0x00000244         32      rw      0x00000000    CPU Reset and Clock control
-RS_AWDT_CTRL_REG               0x0000024C         32      rw      0x00000000    Watchdog Timer Reset Control
+AWDT_RST_CTRL_REG              0x0000024C         32      rw      0x00000000    Watchdog Timer Reset Control
 REBOOT_STATUS_REG              0x00000258         32      rw      0x00400000    Reboot Status, persistent
 BOOT_MODE_REG                  0x0000025C         32      mixed   x             Boot Mode Strapping Pins
 APU_CTRL_REG                   0x00000300         32      rw      0x00000000    APU Control
@@ -30721,7 +30721,7 @@ PLL_RESET               0         rw     0x0           PLL Reset control:
                                                        0: de-assert (PLL operating)
                                                        1: assert (PLL held in reset)
 
-                   <-----  ------>Register (SLCR) PLL_STATUS*
+                   <-----  ------>Register (SLCR) PLL_STS*
 
 Name                     PLL_STATUS_REG
 Relative Address         0x0000010C
@@ -30966,18 +30966,18 @@ T                                                         0: disable,
 reserved                 9       rw      0x0              Reserved. Writes are ignored, read data is zero.
 
       Field Name         Bits     Type   Reset Value                       Description
-reserved                8         rw     0x0            Reserved. Writes are ignored, read data is zero.
+reserved                8         rw     0x0           Reserved. Writes are ignored, read data is zero.
 GEM1_CPU_1XCLKA         7         rw     0x1           Gigabit Ethernet 1 AMBA Clock control
 CT                                                     0: disable, 1: enable
 GEM0_CPU_1XCLKA         6         rw     0x1           Gigabit Ethernet 0 AMBA Clock control
 CT                                                     0: disable, 1: enable
-reserved                5         rw     0x0            Reserved. Writes are ignored, read data is zero.
-reserved                4         rw     0x0            Reserved. Writes are ignored, read data is zero.
+reserved                5         rw     0x0           Reserved. Writes are ignored, read data is zero.
+reserved                4         rw     0x0           Reserved. Writes are ignored, read data is zero.
 USB1_CPU_1XCLKAC        3         rw     0x1           USB controller 1 AMBA Clock control
 T                                                      0: disable, 1: enable
 USB0_CPU_1XCLKAC        2         rw     0x1           USB controller 0 AMBA Clock control
 T                                                      0: disable, 1: enable
-reserved                1         rw     0x0            Reserved. Writes are ignored, read data is zero.
+reserved                1         rw     0x0           Reserved. Writes are ignored, read data is zero.
 DMA_CPU_2XCLKAC         0         rw     0x1           DMA controller AMBA Clock control
 T                                                      0: disable, 1: enable
 
@@ -31035,7 +31035,7 @@ reserved                0         rw     0x1             Reserved. Do not modify
 
                    <-----  ------>Register (SLCR) GEM0_RCLK_CTRL*
 
-Name                    GEM0_RCLK_CTRL_REG_REG
+Name                    GEM0_RCLK_CTRL_REG
 Relative Address        0x00000138
 Absolute Address        0xF8000138
 Width                   32 bits
@@ -31043,7 +31043,7 @@ Access Type             rw
 Reset Value             0x00000001
 Description             GigE 0 Rx Clock and Rx Signals Select
 
-        Register GEM0_RCLK_CTRL_REG_REG Details
+        Register GEM0_RCLK_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                         Description
 reserved                31:5      rw     0x0             Reserved. Writes are ignored, read data is zero.
@@ -31057,7 +31057,7 @@ CLKACT                  0         rw     0x1             Ethernet Controler 0 Rx
 
                    <-----  ------>Register (SLCR) GEM1_RCLK_CTRL*
 
-Name                    GEM1_RCLK_CTRL_REG_REG
+Name                    GEM1_RCLK_CTRL_REG
 Relative Address        0x0000013C
 Absolute Address        0xF800013C
 Width                   32 bits
@@ -31065,7 +31065,7 @@ Access Type             rw
 Reset Value             0x00000001
 Description             GigE 1 Rx Clock and Rx Signals Select
 
-        Register GEM1_RCLK_CTRL_REG_REG Details
+        Register GEM1_RCLK_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                         Description
 reserved                31:5      rw     0x0             Reserved. Writes are ignored, read data is zero.
@@ -31079,7 +31079,7 @@ CLKACT                  0         rw     0x1             Ethernet Controller 1 R
 
                    <-----  ------>Register (SLCR) GEM0_CLK_CTRL*
 
-Name                    GEM0_CLK_CTRL_REG_REG
+Name                    GEM0_CLK_CTRL_REG
 Relative Address        0x00000140
 Absolute Address        0xF8000140
 Width                   32 bits
@@ -31088,7 +31088,7 @@ Access Type             rw
 Reset Value             0x00003C01
 Description             GigE 0 Ref Clock Control
 
-        Register GEM0_CLK_CTRL_REG_REG Details
+        Register GEM0_CLK_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                          Description
 reserved                31:26     rw     0x0              Reserved. Writes are ignored, read data is zero.
@@ -31108,7 +31108,7 @@ CLKACT                  0         rw     0x1              Ethernet Controller 0 
 
                    <-----  ------>Register (SLCR) GEM1_CLK_CTRL*
 
-Name                    GEM1_CLK_CTRL_REG_REG
+Name                    GEM1_CLK_CTRL_REG
 Relative Address        0x00000144
 Absolute Address        0xF8000144
 Width                   32 bits
@@ -31116,7 +31116,7 @@ Access Type             rw
 Reset Value             0x00003C01
 Description             GigE 1 Ref Clock Control
 
-        Register GEM1_CLK_CTRL_REG_REG Details
+        Register GEM1_CLK_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                          Description
 reserved                31:26     rw     0x0              Reserved. Writes are ignored, read data is zero.
@@ -31150,12 +31150,12 @@ Description             SMC Ref Clock Control
 
       Field Name         Bits     Type   Reset Value                       Description
 reserved                31:14     rw     0x0           Reserved. Writes are ignored, read data is zero.
-DIVISOR                 13:8      rw     0x3C           Divisor for SMC source clock.
+DIVISOR                 13:8      rw     0x3C          Divisor for SMC source clock.
 reserved                7:6       rw     0x0           Reserved. Writes are ignored, read data is zero.
 SRCSEL                  5:4       rw     0x2           Select clock source generate SMC clock:
                                                        0x: IO PLL, 10: ARM PLL, 11: DDR PLL
 reserved                3:1       rw     0x0           Reserved. Writes are ignored, read data is zero.
-CLKACT                  0         rw     0x1            SMC Reference Clock control
+CLKACT                  0         rw     0x1           SMC Reference Clock control
                                                        0: disable, 1: enable
 
                    <-----  ------>Register (SLCR) LQSPI_CLK_CTRL*
@@ -31173,7 +31173,7 @@ Description             Quad SPI Ref Clock Control
 
       Field Name         Bits     Type   Reset Value                        Description
 reserved                31:14     rw     0x0            Reserved. Writes are ignored, read data is zero.
-DIVISOR                 13:8      rw     0x28            Divisor for Quad SPI Controller source clock.
+DIVISOR                 13:8      rw     0x28           Divisor for Quad SPI Controller source clock.
 reserved                7:6       rw     0x0            Reserved. Writes are ignored, read data is zero.
 SRCSEL                  5:4       rw     0x2            Select clock source generate Quad SPI clock:
                                                         0x: IO PLL, 10: ARM PLL, 11: DDR PLL
@@ -31202,14 +31202,14 @@ reserved                7:6       rw     0x0            Reserved. Writes are ign
 
       Field Name         Bits     Type   Reset Value                         Description
 SRCSEL                  5:4       rw     0x0            Select the source used to generate the clock.
-                                                         0x: Source for generated clock is IO PLL.
-                                                         10: Source for generated clock is ARM PLL.
-                                                         11: Source for generated clock is DDR PLL.
+                                                        0x: Source for generated clock is IO PLL.
+                                                        10: Source for generated clock is ARM PLL.
+                                                        11: Source for generated clock is DDR PLL.
 reserved                3:2       rw     0x0            Reserved. Writes are ignored, read data is zero.
 CLKACT1                 1         rw     0x1            SDIO Controller 1 Clock control.
-                                                         0: disable, 1: enable
+                                                        0: disable, 1: enable
 CLKACT0                 0         rw     0x1            SDIO Controller 0 Clock control.
-                                                         0: disable, 1: enable
+                                                        0: disable, 1: enable
 
                    <-----  ------>Register (SLCR) UART_CLK_CTRL*
 
@@ -31225,7 +31225,7 @@ Description             UART Ref Clock Control
 
       Field Name         Bits     Type   Reset Value                         Description
 reserved                31:14     rw     0x0            Reserved. Writes are ignored, read data is zero.
-DIVISOR                 13:8      rw     0x3F            Divisor for UART Controller source clock.
+DIVISOR                 13:8      rw     0x3F           Divisor for UART Controller source clock.
 reserved                7:6       rw     0x0            Reserved. Writes are ignored, read data is zero.
 SRCSEL                  5:4       rw     0x0            Selects the PLL source
                                                         to generate the clock.
@@ -31236,7 +31236,7 @@ reserved                3:2       rw     0x0            Reserved. Writes are ign
 CLKACT1                 1         rw     0x1            UART 1 reference clock active:
                                                         0: Clock is disabled
                                                         1: Clock is enabled
-CLKACT0                 0         rw     0x1             UART 0 Reference clock control.
+CLKACT0                 0         rw     0x1            UART 0 Reference clock control.
                                                         0: disable, 1: enable
 
                    <-----  ------>Register (SLCR) SPI_CLK_CTRL*
@@ -31657,7 +31657,7 @@ Description             PL Clock 2 Throttle Control
 reserved                31:4      rw     0x0           Reserved. Writes are ignored, read data is zero.
 reserved                3         rw     0x0           Must be set to 1'b0 to use this feature
 reserved                2         rw     0x0           Must be set to 1'b1 to use this feature
-CNT_RST                 1         rw     0x0            Reset clock throttle counter when in halt state:
+CNT_RST                 1         rw     0x0           Reset clock throttle counter when in halt state:
                                                        0: No effect
                                                        1: Causes counter to be reset once HALT state is
                                                        entered
@@ -31702,7 +31702,7 @@ Description             PL Clock 2 Throttle Status
 
       Field Name         Bits     Type    Reset Value                     Description
 reserved                31:17     ro     0x0            Reserved. Writes are ignored, read data is zero.
-RUNNING                 16        ro     0x1             Current running status of FPGA clock output:
+RUNNING                 16        ro     0x1            Current running status of FPGA clock output:
                                                         0: Clock is stopped or in normal mode (OK to
                                                         change configuration).
                                                         1: Clock is running in debug mode (Keep
@@ -31804,7 +31804,7 @@ Description             PL Clock 3 Throttle Status
 
       Field Name         Bits     Type    Reset Value                     Description
 reserved                31:17     ro     0x0            Reserved. Writes are ignored, read data is zero.
-RUNNING                 16        ro     0x1             Current running status of FPGA clock output:
+RUNNING                 16        ro     0x1            Current running status of FPGA clock output:
                                                         0: Clock is stopped or in normal mode (OK to
                                                         change configuration).
                                                         1: Clock is running in debug mode (Keep
@@ -31827,7 +31827,7 @@ Description             CPU Clock Ratio Mode select
 
       Field Name         Bits     Type    Reset Value                     Description
 reserved                31:1      rw     0x0            Reserved. Writes are ignored, read data is zero.
-CLK_621_TRUE            0         rw     0x1            Select the CPU clock ratio:
+VAL                     0         rw     0x1            Select the CPU clock ratio:
                                                         (When this register changes, no access are allowed
                                                         to OCM.)
                                                         0: 4:2:1
@@ -31869,7 +31869,7 @@ Description             DDR Software Reset Control
 
       Field Name         Bits     Type   Reset Value                       Description
 reserved                31:1      rw     0x0           Reserved. Writes are ignored, read data is zero.
-DDR_RST                 0         rw     0x0            DDR software reset control signal
+RST                     0         rw     0x0           DDR software reset control signal
                                                        0: disable, 1: enable
 
                    <-----  ------>Register (SLCR) TOPSW_RST_CTRL*
@@ -31887,16 +31887,16 @@ Description             Central Interconnect Reset Control
 
       Field Name         Bits     Type   Reset Value                         Description
 reserved                31:1      rw     0x0             Reserved. Writes are ignored, read data is zero.
-TOPSW_RST               0         rw     0x0             Central Interconnect Reset Control:
+RST                     0         rw     0x0             Central Interconnect Reset Control:
                                                          0: de-assert (no reset)
                                                          1: assert
                                                          Care must be taken to ensure that the AXI
                                                          interconnect does not have outstanding
                                                          transactions and the bus is idle.
 
-                   <-----  ------>Register (SLCR) RST_CTRL*
+                   <-----  ------>Register (SLCR) DMAC_RST_CTRL*
 
-Name                    DMAC_RST_CTRL_REG_REG
+Name                    DMAC_RST_CTRL_REG
 Relative Address        0x0000020C
 Absolute Address        0xF800020C
 Width                   32 bits
@@ -31904,11 +31904,11 @@ Access Type             rw
 Reset Value             0x00000000
 Description             DMAC Software Reset Control
 
-        Register DMAC_RST_CTRL_REG_REG Details
+        Register DMAC_RST_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                         Description
 reserved                31:1      rw     0x0             Reserved. Writes are ignored, read data is zero.
-DMAC_RST                0         rw     0x0             DMA Controller software reset signal.
+RST                     0         rw     0x0             DMA Controller software reset signal.
                                                          0: de-assert (DMA controller TrustZone register is
                                                          read only)
                                                          1: assert (DMA controller TrustZone register is
@@ -31938,9 +31938,9 @@ USB0_CPU1X_RST          0         rw     0x0             USB 0 master and slave 
                                                          0: de-assert (no reset)
                                                          1: assert (held in reset)
 
-                   <-----  ------>Register (SLCR) RST_CTRL*
+                   <-----  ------>Register (SLCR) GEM_RST_CTRL*
 
-Name                    GEM_RST_CTRL_REG_REG
+Name                    GEM_RST_CTRL_REG
 Relative Address        0x00000214
 Absolute Address        0xF8000214
 Width                   32 bits
@@ -31948,7 +31948,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             Gigabit Ethernet SW Reset Control
 
-        Register GEM_RST_CTRL_REG_REG Details
+        Register GEM_RST_CTRL_REG Details
         Each Gigabit Ethernet controller has 3 clock domains and each clock domain has a reset control:
         * Reference clock domain reset
         * RxClock domain reset
@@ -32001,10 +32001,10 @@ SDIO0_REF_RST           4         rw     0x0           SDIO 0 reference clock do
 reserved                3:2       rw     0x0           Reserved. Writes are ignored, read data is zero.
 
       Field Name         Bits     Type   Reset Value                       Description
-SDIO1_CPU1X_RST         1         rw     0x0            SDIO 1 master and slave AMBA interfaces reset:
+SDIO1_CPU1X_RST         1         rw     0x0           SDIO 1 master and slave AMBA interfaces reset:
                                                        0: de-assert (no reset)
                                                        1: assert (held in reset)
-SDIO0_CPU1X_RST         0         rw     0x0            SDIO 0 master and slave AMBA interfaces reset:
+SDIO0_CPU1X_RST         0         rw     0x0           SDIO 0 master and slave AMBA interfaces reset:
                                                        0: de-assert (no reset)
                                                        1: assert (held in reset)
 
@@ -32142,9 +32142,9 @@ UART0_CPU1X_RST         0         rw     0x0           UART 0 AMBA software rese
                                                        1: AMBA clock portion of UART 0 subsytem held
                                                        in reset
 
-                   <-----  ------>Register (SLCR) RST_CTRL*
+                   <-----  ------>Register (SLCR) GPIO_RST_CTRL*
 
-Name                    GPIO_RST_CTRL_REG_REG
+Name                    GPIO_RST_CTRL_REG
 Relative Address        0x0000022C
 Absolute Address        0xF800022C
 Width                   32 bits
@@ -32153,11 +32153,11 @@ Reset Value             0x00000000
 
 Description             GPIO Software Reset Control
 
-        Register GPIO_RST_CTRL_REG_REG Details
+        Register GPIO_RST_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                        Description
 reserved                31:1      rw     0x0              Reserved. Writes are ignored, read data is zero.
-GPIO_CPU1X_RST          0         rw     0x0              GPIO AMBA software reset. On assertion of this
+CPU1X_RST               0         rw     0x0              GPIO AMBA software reset. On assertion of this
                                                           reset, the AMBA clock portion of the GPIO
                                                           subsystem will be reset.
                                                           0: No reset
@@ -32178,13 +32178,13 @@ Description             Quad SPI Software Reset Control
 
       Field Name         Bits     Type   Reset Value                        Description
 reserved                31:2      rw     0x0              Reserved. Writes are ignored, read data is zero.
-QSPI_REF_RST            1         rw     0x0              Quad SPI Reference software reset. On assertion
+REF_RST                 1         rw     0x0              Quad SPI Reference software reset. On assertion
                                                           of this reset, the Reference clock portion of the
                                                           QSPI subsystem will be reset.
                                                           0: No reset.
                                                           1: Reference clock portion of QSPI subsytem held
                                                           in reset.
-LQSPI_CPU1X_RST         0         rw     0x0              Quad SPI AMBA software reset. On assertion of
+CPU1X_RST               0         rw     0x0              Quad SPI AMBA software reset. On assertion of
                                                           this reset, the AMBA clock portion of the LQSPI
                                                           subsystem will be reset.
                                                           0: No reset
@@ -32205,13 +32205,13 @@ Description             SMC Software Reset Control
 
       Field Name         Bits     Type   Reset Value                     Description
 reserved                31:2      rw     0x0           Reserved. Writes are ignored, read data is zero.
-SMC_REF_RST             1         rw     0x0           SMC Reference software reset. On assertion of this
+REF_RST                 1         rw     0x0           SMC Reference software reset. On assertion of this
                                                        reset, the Reference clock portion of the SMC
                                                        subsystem will be reset.
                                                        0: No reset
                                                        1: Reference clock portion of SMC subsytem held
                                                        in reset
-SMC_CPU1X_RST           0         rw     0x0           SMC AMBA software reset. On assertion of this
+CPU1X_RST               0         rw     0x0           SMC AMBA software reset. On assertion of this
                                                        reset, the AMBA clock portion of the SMC
                                                        subsystem will be reset.
                                                        0: No reset
@@ -32232,7 +32232,7 @@ Description             OCM Software Reset Control
 
       Field Name         Bits     Type   Reset Value                      Description
 reserved                31:1      rw     0x0           Reserved. Writes are ignored, read data is zero.
-OCM_RST                 0         rw     0x0           OCM software reset. On assertion of this reset, the
+RST                     0         rw     0x0           OCM software reset. On assertion of this reset, the
                                                        OCM subsystem will be reset.
                                                        0: No reset
                                                        1: OCM subsytem held in reset
@@ -32326,9 +32326,9 @@ A9_RST0                 0         rw     0x0           CPU 0 software reset cont
                                                        0: de-assert (no reset)
                                                        1: assert (held in reset)
 
-                   <-----  ------>Register (SLCR) RS_AWDT_CTRL*
+                   <-----  ------>Register (SLCR) AWDT_RST_CTRL*
 
-Name                    RS_AWDT_CTRL_REG
+Name                    AWDT_RST_CTRL_REG
 Relative Address        0x0000024C
 Absolute Address        0xF800024C
 Width                   32 bits
@@ -32464,7 +32464,7 @@ Description             SWDT clock source select
 
       Field Name         Bits     Type   Reset Value                     Description
 reserved                31:1      rw     0x0           Reserved. Writes are ignored, read data is zero.
-SEL                     0         rw     0x0           System watchdog timer clock source selection:
+VAL                     0         rw     0x0           System watchdog timer clock source selection:
                                                        0: internal clock CPU_1x
                                                        1: external clock from PL via EMIO, or from
                                                        pinout via MIO
@@ -32483,7 +32483,7 @@ Description             DMAC TrustZone Config
 
       Field Name         Bits     Type   Reset Value                     Description
 reserved                31:1      rw     0x0           Should Be Zero
-DMAC_NS                 0         rw     0x0           TZ security (connected to boot_manager_ns on
+VAL                    0         rw     0x0           TZ security (connected to boot_manager_ns on
                                                        DMAC):
                                                        0: secure, DMAC operates in the secure state.
                                                        1: non-secure, DMAC operates in the non-secure
@@ -32503,7 +32503,7 @@ Description             DMAC TrustZone Config for Interrupts
 
       Field Name         Bits     Type   Reset Value                     Description
 reserved                31:16     rw     0x0           Should Be Zero
-DMA_IRQ_NS              15:0      rw     0x0           TZ security (connected to boot_irq_ns on DMAC):
+VAL                     15:0      rw     0x0           TZ security (connected to boot_irq_ns on DMAC):
                                                        0: secure, DMAC operates in the secure state.
                                                        1: non-secure, DMAC interrupt/event bit is in the
                                                        non-secure state.
@@ -32522,7 +32522,7 @@ Description             DMAC TrustZone Config for Peripherals
 
       Field Name         Bits     Type   Reset Value                     Description
 reserved                31:4      rw     0x0           Should Be Zero
-DMAC_PERIPH_NS          3:0       rw     0x0           TZ security (connected to boot_periph_ns on
+VAL                    3:0       rw     0x0           TZ security (connected to boot_periph_ns on
                                                        DMAC):
                                                        0: secure, DMAC operates in the secure state.
                                                        1: non-secure, reset value: DMAC peripheral i/f is
@@ -32544,7 +32544,7 @@ Description             PS IDCODE
 REVISION                31:28     ro     x             Revision code
 FAMILY                  27:21     ro     0x1B          Family code
 SUBFAMILY               20:17     ro     0x9           Subfamily code
-DEVICE                  16:12     ro     x              Device code
+DEVICE                  16:12     ro     x             Device code
                                                        7z007s: 0x03
                                                        7z012s: 0x1c
                                                        7z014s: 0x08
@@ -32555,7 +32555,7 @@ DEVICE                  16:12     ro     x              Device code
                                                        7z035: 0x12
                                                        7z045: 0x11
                                                        7z100: 0x16
-MANUFACTURER_ID         11:1      ro     0x49           Manufacturer ID
+MANUFACTURER_ID         11:1      ro     0x49          Manufacturer ID
 reserved                0         ro     0x1           Reserved. Writes are ignored, read data is one.
 
                    <-----  ------>Register (SLCR) DDR_URGENT*
@@ -32571,12 +32571,12 @@ Description             DDR Urgent Control
         Register DDR_URGENT_REG Details
 
       Field Name         Bits     Type   Reset Value                       Description
-reserved                31:8      rw     0x0           Reserved
+reserved                31:8      rw     0x0            Reserved
 S3_ARURGENT             7         rw     0x0            Set Read port 3 prioritization.
 S2_ARURGENT             6         rw     0x0            Set Read port 3 prioritization.
 S1_ARURGENT             5         rw     0x0            Set Read port 2 prioritization.
 S0_ARURGENT             4         rw     0x0            Set Read port 0 prioritization.
-S3_AWURGENT             3         rw     0x0           Set Write port 3 prioritization.
+S3_AWURGENT             3         rw     0x0            Set Write port 3 prioritization.
 
       Field Name         Bits     Type   Reset Value                        Description
 S2_AWURGENT             2         rw     0x0             Set Write port 2 prioritization.
@@ -32599,7 +32599,7 @@ Description             DDR Calibration Start Triggers
 reserved                31:2      rw     0x0             Reserved. Writes are ignored, read data is zero.
 
       Field Name         Bits   Type    Reset Value                       Description
-START_CAL_DLL           1       wo     0x0            This register creates a pulse that is first
+DLL                     1       wo     0x0            This register creates a pulse that is first
                                                       synchronised into the ddr_clk domain and then
                                                       directly drives the co_gs_dll_calib input into the
                                                       DDR controller. This signal is a command that
@@ -32613,7 +32613,7 @@ START_CAL_DLL           1       wo     0x0            This register creates a pu
                                                       0: Do nothing.
                                                       1: Start DLL calibration command.
                                                       A read of this register returns zero.
-START_CAL_SHORT         0       wo     0x0            This register creates a pulse that is first
+SHORT                   0       wo     0x0            This register creates a pulse that is first
                                                       synchronized into the ddr_clk domain and then
                                                       directly drives the co_gs_zq_calib_short input
                                                       into the DDR controller. This is required to pulse
@@ -32645,7 +32645,7 @@ Description             DDR Refresh Start Triggers
 
       Field Name         Bits     Type   Reset Value                       Description
 reserved                31:1      rw     0x0           Reserved. Writes are ignored, read data is zero.
-START_REF               0         wo     0x0           This register creates a pulse that is first
+VAL                     0         wo     0x0           This register creates a pulse that is first
                                                        synchronized into the ddr_clk domain and then
                                                        directly drives the co_gs_rank_refresh input into
                                                        the DDR controller. This register must be used
@@ -35276,7 +35276,7 @@ reserved                2:0       rw     0x1           Must be set to 2.
 
                    <-----  ------>Register (SLCR) GPIOB_CTRL*
 
-Name                    GPIOB_CTRL_REG_REG
+Name                    GPIOB_CTRL_REG
 Relative Address        0x00000B00
 Absolute Address        0xF8000B00
 Width                   32 bits
@@ -35284,7 +35284,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             PS IO Buffer Control
 
-        Register GPIOB_CTRL_REG_REG Details
+        Register GPIOB_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                       Description
 reserved                31:12     rw     0x0            Reserved. Writes are ignored, read data is zero.
@@ -35306,7 +35306,7 @@ VREF_EN                 0         rw     0x0            Enables VREF internal ge
 
                    <-----  ------>Register (SLCR) GPIOB_CFG_CMOS18*
 
-Name                    GPIOB_CFG_CMOS18_REG_REG
+Name                    GPIOB_CFG_CMOS18_REG
 Relative Address        0x00000B04
 Absolute Address        0xF8000B04
 Width                   32 bits
@@ -35314,7 +35314,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             MIO GPIOB CMOS 1.8V config
 
-        Register GPIOB_CFG_CMOS18_REG_REG Details
+        Register GPIOB_CFG_CMOS18_REG Details
         The only allowed values for this register are 0x00000000 (reset value) and 0x0C301166 (normal operation)
 
       Field Name         Bits     Type   Reset Value                       Description
@@ -35332,7 +35332,7 @@ reserved                3:0       rw     0x0            Reserved. Do not modify.
 
                    <-----  ------>Register (SLCR) GPIOB_CFG_CMOS25*
 
-Name                    GPIOB_CFG_CMOS25_REG_REG
+Name                    GPIOB_CFG_CMOS25_REG
 Relative Address        0x00000B08
 Absolute Address        0xF8000B08
 Width                   32 bits
@@ -35340,7 +35340,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             MIO GPIOB CMOS 2.5V config
 
-        Register GPIOB_CFG_CMOS25_REG_REG Details
+        Register GPIOB_CFG_CMOS25_REG Details
         The only allowed values for this register are 0x00000000 (reset value) and 0x0C301100 (normal operation)
 
       Field Name         Bits     Type   Reset Value                      Description
@@ -35356,7 +35356,7 @@ reserved                3:0       rw     0x0            Reserved. Do not modify.
 
                    <-----  ------>Register (SLCR) GPIOB_CFG_CMOS33*
 
-Name                    GPIOB_CFG_CMOS33_REG_REG
+Name                    GPIOB_CFG_CMOS33_REG
 Relative Address        0x00000B0C
 Absolute Address        0xF8000B0C
 Width                   32 bits
@@ -35364,7 +35364,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             MIO GPIOB CMOS 3.3V config
 
-        Register GPIOB_CFG_CMOS33_REG_REG Details
+        Register GPIOB_CFG_CMOS33_REG Details
         The only allowed values for this register are 0x00000000 (reset value) and 0x0C301166 (normal operation)
 
       Field Name         Bits     Type    Reset Value                      Description
@@ -35380,7 +35380,7 @@ reserved                3:0       rw     0x0             Reserved. Do not modify
 
                    <-----  ------>Register (SLCR) GPIOB_CFG_HSTL*
 
-Name                    GPIOB_CFG_HSTL_REG_REG
+Name                    GPIOB_CFG_HSTL_REG
 Relative Address        0x00000B14
 Absolute Address        0xF8000B14
 Width                   32 bits
@@ -35388,7 +35388,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             MIO GPIOB HSTL config
 
-        Register GPIOB_CFG_HSTL_REG_REG Details
+        Register GPIOB_CFG_HSTL_REG Details
         The only allowed values for this register are 0x00000000 (reset value) and 0x0C750077 (normal operation).
         You must provide a VREF or use the internal VREF generator.
         When setting the input to HSTL, you must ensure that
@@ -35409,7 +35409,7 @@ reserved                3:0       rw     0x0            Reserved. Do not modify.
 
                    <-----  ------>Register (SLCR) GPIOB_DRVR_BIAS_CTRL*
 
-Name                    GPIOB_DRVR_BIAS_CTRL_REG_REG
+Name                    GPIOB_DRVR_BIAS_CTRL_REG
 Relative Address        0x00000B18
 Absolute Address        0xF8000B18
 Width                   32 bits
@@ -35417,7 +35417,7 @@ Access Type             mixed
 Reset Value             0x00000000
 Description             MIO GPIOB Driver Bias Control
 
-        Register GPIOB_DRVR_BIAS_CTRL_REG_REG Details
+        Register GPIOB_DRVR_BIAS_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                      Description
 RB_VCFG                 31        ro     0x0            Right Bank VCFG (Read Only)
