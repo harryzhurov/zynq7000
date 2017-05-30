@@ -30581,7 +30581,7 @@ Description             SLCR Write Protection Status
 
       Field Name         Bits     Type   Reset Value                       Description
 reserved                31:1      ro     0x0           Reserved. Writes are ignored, read data is zero.
-LOCK_STATUS             0         ro     0x1            Current state of write protection mode of SLCR:
+LOCK_STATUS             0         ro     0x1           Current state of write protection mode of SLCR:
                                                        0: Registers are writeable. Use the
                                                        slcr.SLCR_LOCK register to lock the slcr registers.
                                                        1: Registers are not writeable.
