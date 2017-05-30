@@ -28120,7 +28120,7 @@ ScuWrPriorityLo         0         rw     0x0            When set (1), changes th
 Module Name             QSPI
 Software Name           XQSPIPS
 Base Address            0xE000D000 qspi
-Description             LQSPI module Registers
+Description             QSPI module Registers
 Vendor Info             Xilinx lqspi
 
                   Register Summary
@@ -30356,7 +30356,7 @@ GEM1_RCLK_CTRL_REG             0x0000013C         32      rw      0x00000001    
 GEM0_CLK_CTRL_REG              0x00000140         32      rw      0x00003C01    GigE 0 Ref Clock Control
 GEM1_CLK_CTRL_REG              0x00000144         32      rw      0x00003C01    GigE 1 Ref Clock Control
 SMC_CLK_CTRL_REG               0x00000148         32      rw      0x00003C21    SMC Ref Clock Control
-LQSPI_CLK_CTRL_REG             0x0000014C         32      rw      0x00002821    Quad SPI Ref Clock Control
+QSPI_CLK_CTRL_REG              0x0000014C         32      rw      0x00002821    Quad SPI Ref Clock Control
 SDIO_CLK_CTRL_REG              0x00000150         32      rw      0x00001E03    SDIO Ref Clock Control
 UART_CLK_CTRL_REG              0x00000154         32      rw      0x00003F03    UART Ref Clock Control
 SPI_CLK_CTRL_REG               0x00000158         32      rw      0x00003F03    SPI Ref Clock Control
@@ -30394,7 +30394,7 @@ CAN_RST_CTRL_REG               0x00000220         32      rw      0x00000000    
 I2C_RST_CTRL_REG               0x00000224         32      rw      0x00000000    I2C Software Reset Control
 UART_RST_CTRL_REG              0x00000228         32      rw      0x00000000    UART Software Reset Control
 GPIO_RST_CTRL_REG              0x0000022C         32      rw      0x00000000    GPIO Software Reset Control
-LQSPI_RST_CTRL_REG             0x00000230         32      rw      0x00000000    Quad SPI Software Reset Control
+QSPI_RST_CTRL_REG              0x00000230         32      rw      0x00000000    Quad SPI Software Reset Control
 SMC_RST_CTRL_REG               0x00000234         32      rw      0x00000000    SMC Software Reset Control
 OCM_RST_CTRL_REG               0x00000238         32      rw      0x00000000    OCM Software Reset Control
 FPGA_RST_CTRL_REG              0x00000240         32      rw      0x01F33F0F    FPGA Software Reset Control
@@ -30936,7 +30936,7 @@ Description              AMBA Peripheral Clock Control
 reserved                 31:25   rw      0x0              Reserved. Writes are ignored, read data is zero.
 SMC_CPU_1XCLKAC          24      rw      0x1              SMC AMBA Clock control
 T                                                         0: disable, 1: enable
-LQSPI_CPU_1XCLKA         23      rw      0x1              Quad SPI AMBA Clock control
+QSPI_CPU_1XCLKA          23      rw      0x1              Quad SPI AMBA Clock control
 CT                                                        0: disable, 1: enable
 GPIO_CPU_1XCLKAC         22      rw      0x1              GPIO AMBA Clock control
 T                                                         0: disable, 1: enable
@@ -31158,9 +31158,9 @@ reserved                3:1       rw     0x0           Reserved. Writes are igno
 CLKACT                  0         rw     0x1           SMC Reference Clock control
                                                        0: disable, 1: enable
 
-                   <-----  ------>Register (SLCR) LQSPI_CLK_CTRL*
+                   <-----  ------>Register (SLCR) QSPI_CLK_CTRL*
 
-Name                    LQSPI_CLK_CTRL_REG
+Name                    QSPI_CLK_CTRL_REG
 Relative Address        0x0000014C
 
 Absolute Address        0xF800014C
@@ -31169,7 +31169,7 @@ Access Type             rw
 Reset Value             0x00002821
 Description             Quad SPI Ref Clock Control
 
-        Register LQSPI_CLK_CTRL_REG Details
+        Register QSPI_CLK_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                        Description
 reserved                31:14     rw     0x0            Reserved. Writes are ignored, read data is zero.
@@ -32164,9 +32164,9 @@ CPU1X_RST               0         rw     0x0              GPIO AMBA software res
                                                           1: AMBA clock portion of GPIO subsytem held in
                                                           reset
 
-                   <-----  ------>Register (SLCR) LQSPI_RST_CTRL*
+                   <-----  ------>Register (SLCR) QSPI_RST_CTRL*
 
-Name                    LQSPI_RST_CTRL_REG
+Name                    QSPI_RST_CTRL_REG
 Relative Address        0x00000230
 Absolute Address        0xF8000230
 Width                   32 bits
@@ -32174,7 +32174,7 @@ Access Type             rw
 Reset Value             0x00000000
 Description             Quad SPI Software Reset Control
 
-        Register LQSPI_RST_CTRL_REG Details
+        Register QSPI_RST_CTRL_REG Details
 
       Field Name         Bits     Type   Reset Value                        Description
 reserved                31:2      rw     0x0              Reserved. Writes are ignored, read data is zero.
@@ -32185,7 +32185,7 @@ REF_RST                 1         rw     0x0              Quad SPI Reference sof
                                                           1: Reference clock portion of QSPI subsytem held
                                                           in reset.
 CPU1X_RST               0         rw     0x0              Quad SPI AMBA software reset. On assertion of
-                                                          this reset, the AMBA clock portion of the LQSPI
+                                                          this reset, the AMBA clock portion of the QSPI
                                                           subsystem will be reset.
                                                           0: No reset
                                                           1: AMBA clock portion of QSPI subsytem held in
