@@ -28159,7 +28159,7 @@ Description              QSPI configuration register
            Register QSPI_CONFIG_REG Details
 
       Field Name          Bits     Type    Reset Value                     Description
-leg_flsh                 31        rw     0x1            Flash memory interface mode control:
+IFMODE                   31        rw     0x1            Flash memory interface mode control:
 (IFMODE)                                                 0: legacy SPI mode
                                                          1: Flash memory interface mode
                                                          This control is required to enable or disable
